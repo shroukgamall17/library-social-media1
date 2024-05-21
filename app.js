@@ -1,6 +1,6 @@
 const express = require("express");
 const mongoose= require('mongoose');
-//const userRoutes=require('./routes/userRoutes')
+const userRoutes=require('./routes/userRoutes')
 const cors=require('cors');
 const dotenv=require('dotenv').config();
 const app = express();
@@ -9,5 +9,5 @@ app.use(cors())
 app.use(express.urlencoded( { extended: false } ));  
 mongoose.connect(process.env.CONNECTION_DB).then(()=>console.log("connected to db ^_^"))
 .catch((err)=>console.error(err));
-// app.get('/', (req, res) => res.send('Hello World !'))
+app.use('/users',userRoutes)
 app.listen(process.env.PORT, () => console.log(`Example app listening on port ${process.env.PORT}!`))
