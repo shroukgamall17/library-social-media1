@@ -35,7 +35,7 @@ const getAllUsers = async (req, res) => {
         password: hashedPassword,
       });
   
-      res.json(createUser);
+      res.status(200).json(createUser);
     } catch (err) {
       res.status(409).json({ message: err.message });
     }
@@ -80,17 +80,69 @@ const getAllUsers = async (req, res) => {
     try {
       const { id } = req.params;
       console.log(req.params);
-      const singleUser = await userModel.findById(id);
+      const singleUser = await userModel.findById(id).select(['-password','-confirmPassword']);
       res.json(singleUser);
     } catch (error) {
       res.status(500).json({ message: error.message });
     }
   };
+
+  const updateUser = async (req, res) => {
+    try {
+      const {id} = req.params;
+      const { name} = req.body;
+     
+      const updateUser = await userModel.findByIdAndUpdate(
+        id,
+        {name},
+        { new: true }
+      );
+      if (!updateUser) {
+        res.status(404).json('No user with this Id found.');
+      }
+      res.status(200).json({ user: updateUser });
+    } catch (err) {
+      res.status(500).json('Error updating the User');
+    }
+  };
+
+  const searchByName = async (req, res) => {
+    try {
+      const { name } = req.query;
+      const users = await userModel.find({ name: name }).select(['-password','-confirmPassword']);
+  
+      res.json(users);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  };
+  
+  const upToAdmin=async(req,res)=>{
+    try {
+      const {userId} = req.params;
+      const updateUser = await userModel.findByIdAndUpdate(
+        userId,
+        { role:  "admin"},
+  
+        { new: true }
+      ).select(['-password','-confirmPassword']);
+     
+      if (!updateUser) {
+        res.status(404).json('No user with this Id found.');
+      }
+      res.status(200).json({ user: updateUser });
+    } catch (err) {
+      res.status(500).json('Error updating the User');
+    }
+  }
   module.exports = {
     getAllUsers,
     registerNewUser,
     loginUser,
     getSingleUser,
     deleteUser,
+    updateUser,
+    searchByName,
+    upToAdmin
   };
   

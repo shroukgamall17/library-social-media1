@@ -1,6 +1,6 @@
 const express = require('express');
 const {getAllUsers,registerNewUser,loginUser
-,deleteUser,getSingleUser}=require("../controllers/userController");
+,deleteUser,getSingleUser,updateUser,searchByName,upToAdmin}=require("../controllers/userController");
 const { restrictTo, auth } = require('../middlewares/auth');
 const router = express.Router();
 // Login User
@@ -13,4 +13,10 @@ router.get('/single/:id',getSingleUser )
 router.get('/all', getAllUsers)
 //delete user
 router.delete('/:id', deleteUser)
+//update user
+router.patch('/:id',updateUser)
+//search by name
+router.get('/search',searchByName)
+//up to admin
+router.patch('/up/:userId',upToAdmin)
 module.exports=router;
