@@ -1,3 +1,0 @@
-const obj={
-    name:"hala",
-}
