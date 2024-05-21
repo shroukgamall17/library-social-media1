@@ -154,6 +154,19 @@ const getAllUsers = async (req, res) => {
       res.status(500).json('Error updating the User');
     }
   }
+
+  const filterWithUser=async(req,res)=>{
+    try {
+      const users=await userModel.find({role:"user"}).count();
+      
+      res.status(201).json({
+        message: 'Successfully fetched all the users',
+        data: users,
+      });
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  }
   module.exports = {
     getAllUsers,
     registerNewUser,
@@ -163,6 +176,7 @@ const getAllUsers = async (req, res) => {
     updateUser,
     searchByName,
     upToAdmin,
-    downToUser
+    downToUser,
+    filterWithUser
   };
   
