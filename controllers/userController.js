@@ -135,6 +135,25 @@ const getAllUsers = async (req, res) => {
       res.status(500).json('Error updating the User');
     }
   }
+
+  const downToUser=async(req,res)=>{
+    try {
+      const {userId} = req.params;
+      
+      const updateUser = await userModel.findByIdAndUpdate(
+        userId,
+        { role:  "user"},
+        { new: true }
+      ).select(['-password','-confirmPassword']);
+  
+      if (!updateUser) {
+        res.status(404).json('No user with this Id found.');
+      }
+      res.status(200).json({ user: updateUser });
+    } catch (err) {
+      res.status(500).json('Error updating the User');
+    }
+  }
   module.exports = {
     getAllUsers,
     registerNewUser,
@@ -143,6 +162,7 @@ const getAllUsers = async (req, res) => {
     deleteUser,
     updateUser,
     searchByName,
-    upToAdmin
+    upToAdmin,
+    downToUser
   };
   

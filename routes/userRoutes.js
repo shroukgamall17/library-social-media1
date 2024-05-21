@@ -1,6 +1,6 @@
 const express = require('express');
 const {getAllUsers,registerNewUser,loginUser
-,deleteUser,getSingleUser,updateUser,searchByName,upToAdmin}=require("../controllers/userController");
+,deleteUser,getSingleUser,updateUser,searchByName,upToAdmin,downToUser}=require("../controllers/userController");
 const { restrictTo, auth } = require('../middlewares/auth');
 const router = express.Router();
 // Login User
@@ -19,4 +19,6 @@ router.patch('/:id',updateUser)
 router.get('/search',searchByName)
 //up to admin
 router.patch('/up/:userId',upToAdmin)
+///down to user
+router.patch('/down/:userId',downToUser)
 module.exports=router;
