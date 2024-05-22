@@ -16,7 +16,19 @@ const getAllUsers = async (req, res) => {
 
   const registerNewUser = async (req, res) => {
     try {
+      const files = req.file; 
+      let photo = '';
+  
+    
+      if (files) {
+        photo = files.filename;
+      }
+
       const { name, email, password, confirmPassword,role } = req.body;
+        // Ensure all required fields are provided
+    if (!name || !email || !password || !confirmPassword ) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
       const oldUser = await userModel.findOne({ email });
       if (oldUser) {
         return res.status(409).json("email already exist");
@@ -30,6 +42,7 @@ const getAllUsers = async (req, res) => {
       const createUser = await userModel.create({
         name,
         email,
+        photo,
         role,
         confirmPassword: hashedPassword,
         password: hashedPassword,
@@ -167,6 +180,31 @@ const getAllUsers = async (req, res) => {
       res.status(500).json({ message: err.message });
     }
   }
+
+  const updateUserPhoto = async (req, res) => {
+    try {
+      const {id} = req.params;
+      let photo = '';                  
+      if (req.file != undefined) {
+        photo = req.file.filename;
+      }
+      //const { name, phone, government } = req.body;
+    
+      const updateUser = await userModel.findByIdAndUpdate(
+        id,
+        {photo },
+        { new: true }
+      );
+      if (!updateUser) {
+        res.status(404).json('No user with this Id found.');
+      }
+      res.status(200).json({ user: updateUser });
+    } catch (err) {
+      res.status(500).json('Error updating the User');
+    }
+  };
+
+  
   module.exports = {
     getAllUsers,
     registerNewUser,
@@ -177,6 +215,7 @@ const getAllUsers = async (req, res) => {
     searchByName,
     upToAdmin,
     downToUser,
-    filterWithUser
+    filterWithUser,
+    updateUserPhoto
   };
   
