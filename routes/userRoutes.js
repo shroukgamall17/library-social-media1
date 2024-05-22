@@ -13,7 +13,9 @@ const {
   upToAdmin,
   downToUser,
   filterWithUser,
-  updateUserPhoto
+  updateUserPhoto,
+  followUser,
+  unfollowUser
 } = require("../controllers/userController");
 const { restrictTo, auth } = require("../middlewares/auth");
 //upload image
@@ -54,4 +56,8 @@ router.patch("/down/:userId", downToUser);
 router.get("/user", filterWithUser);
 ///update docImg user
 router.patch("/photo/:id",upload.single("photo"), updateUserPhoto);
+//follow user
+router.post("/follow/:userId/:followUserId", followUser);
+//unfollow user
+router.post("/unfollow/:userId/:unfollowUserId", unfollowUser);
 module.exports = router;

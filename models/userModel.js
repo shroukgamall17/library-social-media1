@@ -7,6 +7,8 @@ const userSchema = new mongoose.Schema({
   },
     password: { type: String, required: true},
     photo:{type :String},
+    followers: [{ type: mongoose.SchemaTypes.ObjectId, ref: 'User' }],
+    following: [{ type: mongoose.SchemaTypes.ObjectId, ref: 'User' }],
     confirmPassword: {type:String,required:true},
     role: { type: String, enum: ["admin", "user"], default: "user" }
 },{

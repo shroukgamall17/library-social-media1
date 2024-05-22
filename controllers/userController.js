@@ -204,6 +204,70 @@ const getAllUsers = async (req, res) => {
     }
   };
 
+  const followUser=async (req, res) => {
+    try {
+        const { userId, followUserId } = req.params;
+
+        // Find the user who is being followed
+        const followUser = await userModel.findById(followUserId);
+        if (!followUser) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Find the user who is following
+        const user = await userModel.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Check if already following
+        if (user.following.includes(followUserId)) {
+            return res.status(400).json({ message: 'Already following this user' });
+        }
+
+        // Add the followed user to the following list
+        user.following.push(followUserId);
+        await user.save();
+
+        // Add the follower to the followed user's followers list
+        followUser.followers.push(userId);
+        await followUser.save();
+
+        res.status(200).json({ message: 'Followed user successfully' });
+    } catch (err) {
+        res.status(500).json({ message: 'Server error', error: err.message });
+    }
+};
+
+
+
+const unfollowUser= async (req, res) => {
+  const { userId, unfollowUserId } = req.params;
+
+  if (!userId || !unfollowUserId) {
+    return res.status(400).send('User IDs are required.');
+  }
+
+  try {
+    const user = await userModel.findById(userId);
+    const unfollowUser = await userModel.findById(unfollowUserId);
+
+    if (!user || !unfollowUser) {
+      return res.status(404).send('User not found.');
+    }
+
+    user.following = user.following.filter(id => id.toString() !== unfollowUserId);
+    unfollowUser.followers = unfollowUser.followers.filter(id => id.toString() !== userId);
+
+    await user.save();
+    await unfollowUser.save();
+
+    res.status(200).send('Unfollowed successfully.');
+  } catch (err) {
+    res.status(500).send('Server error.');
+  }
+}
+
   
   module.exports = {
     getAllUsers,
@@ -216,6 +280,8 @@ const getAllUsers = async (req, res) => {
     upToAdmin,
     downToUser,
     filterWithUser,
-    updateUserPhoto
+    updateUserPhoto,
+    followUser,
+    unfollowUser
   };
   
