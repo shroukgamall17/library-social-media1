@@ -7,7 +7,7 @@ const app = express();
 app.use(express.json());
 app.use(cors())
 app.use(express.urlencoded( { extended: false } ));  
-mongoose.connect(process.env.CONNECTION_DB).then(()=>console.log("connected to db ^_^"))
+mongoose.connect(process.env.CONNECTION_DB).then(()=>console.log("connected to db 😃"))
 .catch((err)=>console.error(err));
 app.use('/users',userRoutes)
 app.listen(process.env.PORT, () => console.log(`Example app listening on port ${process.env.PORT}!`))
