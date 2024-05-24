@@ -1,7 +1,7 @@
 const express = require("express");
 const multer = require("multer");
 const path = require("path");
-const fs =require('fs')
+const fs = require("fs");
 const {
   getAllUsers,
   registerNewUser,
@@ -15,29 +15,30 @@ const {
   filterWithUser,
   updateUserPhoto,
   followUser,
-  unfollowUser
+  unfollowUser,
 } = require("../controllers/userController");
+const authController = require("../controllers/authController");
 const { restrictTo, auth } = require("../middlewares/auth");
 //upload image
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-      const uploadDir = path.join(__dirname, '../userImages');
-      // تأكد من أن المجلد موجود، وإذا لم يكن موجودًا، قم بإنشائه
-      if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true });
-      }
-      cb(null, uploadDir);
-    },
-    filename: (req, file, cb) => {
-      cb(null, new Date().toISOString().replace(/:/g, '-') + file.originalname);
+  destination: (req, file, cb) => {
+    const uploadDir = path.join(__dirname, "../userImages");
+    // تأكد من أن المجلد موجود، وإذا لم يكن موجودًا، قم بإنشائه
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
     }
-  });
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    cb(null, new Date().toISOString().replace(/:/g, "-") + file.originalname);
+  },
+});
 const upload = multer({ storage: storage });
 const router = express.Router();
 // Login User
-router.post("/login", loginUser);
+router.post("/login", authController.login);
 //register new User
-router.post("/register",upload.single('photo'), registerNewUser);
+router.post("/register", authController.signup);
 // get single user
 router.get("/single/:id", getSingleUser);
 //get All Users
@@ -54,8 +55,8 @@ router.patch("/up/:userId", upToAdmin);
 router.patch("/down/:userId", downToUser);
 //get all users
 router.get("/user", filterWithUser);
-///update docImg user
-router.patch("/photo/:id",upload.single("photo"), updateUserPhoto);
+///update docImg us.er
+router.patch("/photo/:id", upload.single("photo"), updateUserPhoto);
 //follow user
 router.post("/follow/:userId/:followUserId", followUser);
 //unfollow user
