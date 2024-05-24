@@ -1,7 +1,8 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const userModel = require("../models/userModel");
-
+const nodemailer = require('nodemailer')
+const crypto = require('crypto');;
 const getAllUsers = async (req, res) => {
     try {
       const users = await userModel.find({}).sort({ createdAt: -1 }).select(['-password','-confirmPassword']);
@@ -268,7 +269,87 @@ const unfollowUser= async (req, res) => {
   }
 }
 
+const requestPasswordReset = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await userModel.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Generate reset token and set expiry
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+
+    await user.save();
+
+    // Send email with reset link
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.ethereal.email',
+      port: 587,
+      auth: {
+          user: 'alanis.veum44@ethereal.email',
+          pass: 'NBJND7mSpmxQnjkSZm'
+      }
+  });
+
+    const mailOptions = {
+      to: user.email,
+      from: 'angloesam61@gmail.com',
+      subject: 'Password Reset',
+      text: `You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n
+        Please click on the following link, or paste this into your browser to complete the process:\n\n
+        http://${req.headers.host}/reset/${resetToken}\n\n
+        If you did not request this, please ignore this email and your password will remain unchanged.\n`
+    };
+
+    transporter.sendMail(mailOptions, (err, response) => {
+      if (err) {
+        return res.status(500).json({ message: 'Error sending email', error: err.message });
+      }
+      res.status(200).json({ message: 'Password reset email sent successfully' });
+    });
+
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
   
+
+const resetPassword = async (req, res) => {
+  const { token } = req.params;
+  const { newPassword, confirmPassword } = req.body;
+
+  try {
+    const user = await userModel.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: 'Password reset token is invalid or has expired' });
+    }
+
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({ message: 'Passwords do not match' });
+    }
+
+    user.password = newPassword; // Ensure you hash the password before saving
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+
+    await user.save();
+
+    res.status(200).json({ message: 'Password has been reset successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
+
+
+
   module.exports = {
     getAllUsers,
     registerNewUser,
@@ -282,6 +363,8 @@ const unfollowUser= async (req, res) => {
     filterWithUser,
     updateUserPhoto,
     followUser,
-    unfollowUser
+    unfollowUser,
+    requestPasswordReset,
+    resetPassword
   };
   
