@@ -127,6 +127,20 @@ exports.resetPassword = async (req, res) => {
     res.status(400).json({ message: "Invalid credentials", error });
   }
 };
+exports.updatePassword = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!(await bcrypt.compare(user.password, req.body.currentPassword))) {
+      return res.status(400).json({ message: "password incorrect" });
+    }
+    user.password = req.body.password;
+    user.passwordConfirm = req.body.passwordConfirm;
+    await user.save();
+    res.status(200).json({ user });
+  } catch (error) {
+    res.status(400).json({ error });
+  }
+};
 exports.auth = async (req, res, next) => {
   try {
     const { token } = req.cookies;
