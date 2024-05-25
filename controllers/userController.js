@@ -1,7 +1,8 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const userModel = require("../models/userModel");
-
+const nodemailer = require('nodemailer')
+const crypto = require('crypto');;
 const getAllUsers = async (req, res) => {
   try {
     const users = await userModel
@@ -277,8 +278,7 @@ const unfollowUser = async (req, res) => {
 
 module.exports = {
   getAllUsers,
-  registerNewUser,
-  loginUser,
+
   getSingleUser,
   deleteUser,
   updateUser,

@@ -10,7 +10,9 @@ const userSchema = new mongoose.Schema({
     followers: [{ type: mongoose.SchemaTypes.ObjectId, ref: 'User' }],
     following: [{ type: mongoose.SchemaTypes.ObjectId, ref: 'User' }],
     confirmPassword: {type:String,required:true},
-    role: { type: String, enum: ["admin", "user"], default: "user" }
+    role: { type: String, enum: ["admin", "user"], default: "user" },
+    // resetPasswordToken: { type: String },
+    // resetPasswordExpires: { type: Date }
 },{
   timestamps:true
 });
