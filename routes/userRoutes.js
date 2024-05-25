@@ -4,7 +4,6 @@ const path = require("path");
 const fs = require("fs");
 const {
   getAllUsers,
-
   deleteUser,
   getSingleUser,
   updateUser,
@@ -67,4 +66,8 @@ router.patch("/photo/:id", upload.single("photo"), updateUserPhoto);
 router.post("/follow/:userId/:followUserId", followUser);
 //unfollow user
 router.post("/unfollow/:userId/:unfollowUserId", unfollowUser);
+// request reset password
+// router.post('/requestPasswordReset', requestPasswordReset);
+//reset password
+// router.post('/updatePassword/:token', resetPassword);
 module.exports = router;
