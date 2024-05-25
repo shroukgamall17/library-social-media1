@@ -1,11 +1,10 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const userModel = require("../models/userModel");
+const User = require("../models/userModel");
 
 const getAllUsers = async (req, res) => {
   try {
-    const users = await userModel
-      .find({})
+    const users = await User.find({})
       .sort({ createdAt: -1 })
       .select(["-password", "-confirmPassword"]);
     res.status(201).json({
@@ -80,7 +79,7 @@ const getAllUsers = async (req, res) => {
 const deleteUser = async (req, res) => {
   const { id } = req.params;
   try {
-    const data = await userModel.findByIdAndDelete(id);
+    const data = await User.findByIdAndDelete(id);
     if (!data) {
       return res.status(404).json("Id Not Found");
     }
@@ -94,9 +93,10 @@ const getSingleUser = async (req, res) => {
   try {
     const { id } = req.params;
     console.log(req.params);
-    const singleUser = await userModel
-      .findById(id)
-      .select(["-password", "-confirmPassword"]);
+    const singleUser = await User.findById(id).select([
+      "-password",
+      "-confirmPassword",
+    ]);
     res.json(singleUser);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -108,7 +108,7 @@ const updateUser = async (req, res) => {
     const { id } = req.params;
     const { name } = req.body;
 
-    const updateUser = await userModel.findByIdAndUpdate(
+    const updateUser = await User.findByIdAndUpdate(
       id,
       { name },
       { new: true }
@@ -125,9 +125,10 @@ const updateUser = async (req, res) => {
 const searchByName = async (req, res) => {
   try {
     const { name } = req.query;
-    const users = await userModel
-      .find({ name: name })
-      .select(["-password", "-confirmPassword"]);
+    const users = await User.find({ name: name }).select([
+      "-password",
+      "-confirmPassword",
+    ]);
 
     res.json(users);
   } catch (error) {
@@ -138,14 +139,12 @@ const searchByName = async (req, res) => {
 const upToAdmin = async (req, res) => {
   try {
     const { userId } = req.params;
-    const updateUser = await userModel
-      .findByIdAndUpdate(
-        userId,
-        { role: "admin" },
+    const updateUser = await User.findByIdAndUpdate(
+      userId,
+      { role: "admin" },
 
-        { new: true }
-      )
-      .select(["-password", "-confirmPassword"]);
+      { new: true }
+    ).select(["-password", "-confirmPassword"]);
 
     if (!updateUser) {
       res.status(404).json("No user with this Id found.");
@@ -160,9 +159,11 @@ const downToUser = async (req, res) => {
   try {
     const { userId } = req.params;
 
-    const updateUser = await userModel
-      .findByIdAndUpdate(userId, { role: "user" }, { new: true })
-      .select(["-password", "-confirmPassword"]);
+    const updateUser = await User.findByIdAndUpdate(
+      userId,
+      { role: "user" },
+      { new: true }
+    ).select(["-password", "-confirmPassword"]);
 
     if (!updateUser) {
       res.status(404).json("No user with this Id found.");
@@ -175,7 +176,7 @@ const downToUser = async (req, res) => {
 
 const filterWithUser = async (req, res) => {
   try {
-    const users = await userModel.find({ role: "user" }).count();
+    const users = await User.find({ role: "user" }).count();
 
     res.status(201).json({
       message: "Successfully fetched all the users",
@@ -195,7 +196,7 @@ const updateUserPhoto = async (req, res) => {
     }
     //const { name, phone, government } = req.body;
 
-    const updateUser = await userModel.findByIdAndUpdate(
+    const updateUser = await User.findByIdAndUpdate(
       id,
       { photo },
       { new: true }
@@ -214,13 +215,13 @@ const followUser = async (req, res) => {
     const { userId, followUserId } = req.params;
 
     // Find the user who is being followed
-    const followUser = await userModel.findById(followUserId);
+    const followUser = await User.findById(followUserId);
     if (!followUser) {
       return res.status(404).json({ message: "User not found" });
     }
 
     // Find the user who is following
-    const user = await userModel.findById(userId);
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -252,8 +253,8 @@ const unfollowUser = async (req, res) => {
   }
 
   try {
-    const user = await userModel.findById(userId);
-    const unfollowUser = await userModel.findById(unfollowUserId);
+    const user = await User.findById(userId);
+    const unfollowUser = await User.findById(unfollowUserId);
 
     if (!user || !unfollowUser) {
       return res.status(404).send("User not found.");
@@ -277,8 +278,8 @@ const unfollowUser = async (req, res) => {
 
 module.exports = {
   getAllUsers,
-  registerNewUser,
-  loginUser,
+  // registerNewUser,
+  // loginUser,
   getSingleUser,
   deleteUser,
   updateUser,

@@ -1,20 +1,37 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
-const userSchema = new mongoose.Schema({
+const crypto = require("crypto");
+const userSchema = new mongoose.Schema(
+  {
     name: { type: String, required: true },
-    email: { type: String, required: true, unique: true ,
-    validate:[validator.isEmail,'Invalid Email'],lowercase:true
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      validate: [validator.isEmail, "Invalid Email"],
+      lowercase: true,
+    },
+    password: { type: String, required: true },
+    photo: { type: String },
+    followers: [{ type: mongoose.SchemaTypes.ObjectId, ref: "User" }],
+    following: [{ type: mongoose.SchemaTypes.ObjectId, ref: "User" }],
+    confirmPassword: { type: String, required: true },
+    role: { type: String, enum: ["admin", "user"], default: "user" },
+    passwordResetToken: String,
+    passwordResetExpires: Date,
   },
-    password: { type: String, required: true},
-    photo:{type :String},
-    followers: [{ type: mongoose.SchemaTypes.ObjectId, ref: 'User' }],
-    following: [{ type: mongoose.SchemaTypes.ObjectId, ref: 'User' }],
-    confirmPassword: {type:String,required:true},
-    role: { type: String, enum: ["admin", "user"], default: "user" }
-},{
-  timestamps:true
-});
-
-
-const userModel = mongoose.model("User", userSchema);
-module.exports = userModel;
+  {
+    timestamps: true,
+  }
+);
+userSchema.methods.createPasswordResetToken = function () {
+  const resetToken = crypto.randomBytes(32).toString("hex");
+  this.passwordResetToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+  return resetToken;
+};
+const User = mongoose.model("User", userSchema);
+module.exports = User;
