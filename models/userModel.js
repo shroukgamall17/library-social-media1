@@ -20,6 +20,7 @@ const userSchema = new mongoose.Schema(
     passwordResetToken: String,
     passwordResetExpires: Date,
   },
+
   {
     timestamps: true,
   }
@@ -35,3 +36,4 @@ userSchema.methods.createPasswordResetToken = function () {
 };
 const User = mongoose.model("User", userSchema);
 module.exports = User;
+
