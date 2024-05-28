@@ -2,12 +2,21 @@ const express = require("express");
 const mongoose = require("mongoose");
 const userRoutes = require("./routes/userRoutes");
 const postRoute = require("./routes/postRoute");
+<<<<<<< HEAD
 const commentRoute = require("./routes/commentRoute");
+=======
+const bookRoutes = require("./routes/bookRoutes");
+>>>>>>> master
 const cors = require("cors");
 const dotenv = require("dotenv").config();
 const app = express();
 app.use(express.json());
-app.use(cors());
+app.use(
+  cors({
+    credentials: true,
+    origin: "http://localhost:5174",
+  })
+);
 app.use(express.urlencoded({ extended: false }));
 mongoose
   .connect(process.env.CONNECTION_DB)
@@ -15,7 +24,11 @@ mongoose
   .catch((err) => console.error(err));
 app.use("/users", userRoutes);
 app.use("/posts", postRoute);
+<<<<<<< HEAD
 app.use("/comment", commentRoute);
+=======
+app.use("/books", bookRoutes);
+>>>>>>> master
 app.listen(process.env.PORT, () =>
   console.log(`Example app listening on port ${process.env.PORT}!`)
 );

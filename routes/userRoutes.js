@@ -4,8 +4,7 @@ const path = require("path");
 const fs = require("fs");
 const {
   getAllUsers,
-  registerNewUser,
-  loginUser,
+
   deleteUser,
   getSingleUser,
   updateUser,
@@ -37,16 +36,26 @@ const upload = multer({ storage: storage });
 const router = express.Router();
 // Login User
 router.post("/login", authController.login);
+
 //register new User
 router.post("/register", authController.signup);
+
+//reset password
+router.post("/forgotPassword", authController.forgotPassword);
+router.post("/resetPassword/:token", authController.resetPassword);
+
+//update password
+router.post("/updatePassword", authController.updatePassword);
+
 // get single user
-router.get("/single/:id", getSingleUser);
+// router.get("/single/:id", getSingleUser);
+router.route(":id").get(getSingleUser).delete(deleteUser).patch(updateUser);
 //get All Users
-router.get("/all", getAllUsers);
+router.get("/", getAllUsers);
 //delete user
-router.delete("/:id", deleteUser);
-//update user
-router.patch("/:id", updateUser);
+// router.delete("/:id", deleteUser);
+// //update user
+// router.patch("/:id", updateUser);
 //search by name
 router.get("/search", searchByName);
 //up to admin
