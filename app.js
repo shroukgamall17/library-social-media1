@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const userRoutes = require("./routes/userRoutes");
 const postRoute = require("./routes/postRoute");
+const commentRoute = require("./routes/commentRoute");
 const cors = require("cors");
 const dotenv = require("dotenv").config();
 const app = express();
@@ -14,6 +15,7 @@ mongoose
   .catch((err) => console.error(err));
 app.use("/users", userRoutes);
 app.use("/posts", postRoute);
+app.use("/comment", commentRoute);
 app.listen(process.env.PORT, () =>
   console.log(`Example app listening on port ${process.env.PORT}!`)
 );

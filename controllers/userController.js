@@ -277,8 +277,6 @@ const unfollowUser = async (req, res) => {
 
 module.exports = {
   getAllUsers,
-  registerNewUser,
-  loginUser,
   getSingleUser,
   deleteUser,
   updateUser,
