@@ -31,10 +31,7 @@ exports.signup = async (req, res) => {
       },
       process.env.SECRET_KEY
     );
-    res
-      .cookie("token", token, { httpOnly: true })
-      .status(201)
-      .json({ newUser });
+    res.cookie("token", token, { httpOnly: true }).status(201).json(newUser);
   } catch (error) {
     res.status(400).json({ message: "Invalid credentials", error: error });
   }
@@ -45,7 +42,7 @@ exports.login = async (req, res) => {
     if (!email || !password) {
       return res.status(400).json({ msg: "Please enter email and password" });
     }
-    const user = await User.findOne({ email: email });
+    const user = await User.findOne({ email }).select("+password");
     if (!user) {
       return res.status(400).json({ message: "invalid email or password" });
     }
@@ -61,12 +58,12 @@ exports.login = async (req, res) => {
     );
     res.cookie("token", token, { httpOnly: true }).status(200).json({ user });
   } catch (error) {
+    console.log(error);
     res.status(400).json({ message: "Invalid credentials", error });
   }
 };
 exports.forgotPassword = async (req, res) => {
   const user = await User.findOne({ email: req.body.email });
-  console.log(user);
   if (!user)
     return res.status(400).json({ msg: "there is no user with that email " });
   const resetToken = user.createPasswordResetToken();
@@ -109,9 +106,10 @@ exports.resetPassword = async (req, res) => {
     if (!user) {
       return res.json({ message: "Token is invalid or expired" });
     }
+
     if (req.body.password === req.body.confirmPassword) {
-      user.password = req.body.password;
-      user.confirmPassword = req.body.confirmPassword;
+      user.password = await bcrypt.hash(req.body.password, 10);
+      user.confirmPassword = await bcrypt.hash(req.body.confirmPassword, 10);
       user.passwordResetToken = undefined;
       user.passwordResetExpires = undefined;
       await user.save();
@@ -129,7 +127,7 @@ exports.resetPassword = async (req, res) => {
 };
 exports.updatePassword = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user.id).select("+password");
     if (!(await bcrypt.compare(user.password, req.body.currentPassword))) {
       return res.status(400).json({ message: "password incorrect" });
     }
