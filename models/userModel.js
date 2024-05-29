@@ -11,14 +11,11 @@ const userSchema = new mongoose.Schema(
       validate: [validator.isEmail, "Invalid Email"],
       lowercase: true,
     },
-    password: { type: String, required: true },
-    posts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Post' }],
-    savedPosts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Post' }],
-    favouriteBooks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Book' }],
-    //photo: { type: String },
+    password: { type: String, required: true, select: false },
+    photo: { type: String },
     followers: [{ type: mongoose.SchemaTypes.ObjectId, ref: "User" }],
     following: [{ type: mongoose.SchemaTypes.ObjectId, ref: "User" }],
-    confirmPassword: { type: String, required: true },
+    confirmPassword: { type: String, required: true, select: false },
     role: { type: String, enum: ["admin", "user"], default: "user" },
     passwordResetToken: String,
     passwordResetExpires: Date,
@@ -39,4 +36,3 @@ userSchema.methods.createPasswordResetToken = function () {
 };
 const User = mongoose.model("User", userSchema);
 module.exports = User;
-
