@@ -32,6 +32,7 @@ exports.getAllPosts = async (req, res) => {
 
 //get post by id
 exports.getPostById = async (req, res) => {
+  console.log('fdfdgfd')
   try {
     const post = await Post.findById(req.params.id).populate([
       //   "comments",
