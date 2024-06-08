@@ -11,7 +11,7 @@ const crypto = require('crypto');
 const getAllUsers = async (req, res) => {
   try {
     const users = await User.find({})
-      .sort({ createdAt: -1 }).populate(['favouriteBooks','posts'])
+      .sort({ createdAt: -1 })
       .select(["-password", "-confirmPassword"]);
     res.status(201).json({
       message: "Successfully fetched all the users",

@@ -12,6 +12,8 @@ const authorRoutes = require("./routes/authorRoutes");
 const cors = require("cors");
 const dotenv = require("dotenv").config();
 const app = express();
+const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
 app.use(express.json());
 app.use(
   cors({
@@ -19,6 +21,8 @@ app.use(
     origin: "http://localhost:5173",
   })
 );
+app.use(bodyParser.json());
+app.use(cookieParser());
 app.use(express.urlencoded({ extended: false }));
 mongoose
   .connect(process.env.CONNECTION_DB)
