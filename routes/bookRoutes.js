@@ -11,7 +11,8 @@ const {
   getSingleBook,
   searchByTitle,
   addFavoriteBook,
-  removeFavoriteBook
+  removeFavoriteBook,
+  getAllCategory
 } = require("../controllers/bookController");
 // Define multer storage configuration
 const storage = multer.diskStorage({
@@ -31,6 +32,8 @@ const upload = multer({ storage: storage });
 const router = express.Router();
 // Get All Book
 router.get("/", getAllBook);
+//get all category
+router.get("/book/category", getAllCategory);
 //search by category
 router.get("/searchCategory", searchByCategory);
 //search by title

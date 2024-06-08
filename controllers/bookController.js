@@ -10,6 +10,15 @@ const getAllBook = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+// GET all category
+const getAllCategory = async (req, res) => {
+  try {
+    const category = await bookModel.find({});
+    res.status(200).json({ message: "success", Data: category });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
 //add book
 
 const addBook = async (req, res) => {
@@ -202,5 +211,6 @@ module.exports = {
   getSingleBook,
   searchByTitle,
   addFavoriteBook,
-  removeFavoriteBook
+  removeFavoriteBook,
+  getAllCategory
 };
