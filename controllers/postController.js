@@ -1,7 +1,6 @@
 const Post = require("../models/postModel");
 const User = require("../models/userModel");
 
-
 exports.createPost = async (req, res) => {
   try {
     const files = req.file;
@@ -25,7 +24,7 @@ exports.createPost = async (req, res) => {
       userId,
       type,
       description,
-      photo
+      photo,
     });
 
     await User.findByIdAndUpdate(
@@ -43,7 +42,10 @@ exports.createPost = async (req, res) => {
 //get all posts
 exports.getAllPosts = async (req, res) => {
   try {
-    const posts = await Post.find().populate(["likes"]);
+    const posts = await Post.find()
+      .populate(["likes"])
+      // .populate(["comments"])
+      .populate("userId");
     res.status(200).json(posts);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -52,11 +54,11 @@ exports.getAllPosts = async (req, res) => {
 
 //get post by id
 exports.getPostById = async (req, res) => {
-  console.log('fdfdgfd')
   try {
     const post = await Post.findById(req.params.id).populate([
       //   "comments",
       "likes",
+      "userId",
     ]);
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
@@ -76,7 +78,7 @@ exports.updatePost = async (req, res) => {
     }
     const updatedPost = await Post.findByIdAndUpdate(
       req.params.id,
-      { description,photo },
+      { description, photo },
       { new: true }
     );
     if (!updatedPost) {
@@ -155,7 +157,9 @@ exports.savePost = async (req, res) => {
     const { userId, postId } = req.params;
 
     if (!userId || !postId) {
-      return res.status(400).json({ message: "User ID and Post ID are required." });
+      return res
+        .status(400)
+        .json({ message: "User ID and Post ID are required." });
     }
 
     const post = await Post.findById(postId);
@@ -174,19 +178,22 @@ exports.savePost = async (req, res) => {
       return res.status(404).json({ message: "User not found." });
     }
 
-    res.status(200).json({ message: "Post added to user's posts.", data: user });
+    res
+      .status(200)
+      .json({ message: "Post added to user's posts.", data: user });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
-
 
 exports.unSavePost = async (req, res) => {
   try {
     const { userId, postId } = req.params;
 
     if (!userId || !postId) {
-      return res.status(400).json({ message: "User ID and Post ID are required." });
+      return res
+        .status(400)
+        .json({ message: "User ID and Post ID are required." });
     }
 
     // Remove the post from the user's favorite posts array
@@ -200,7 +207,9 @@ exports.unSavePost = async (req, res) => {
       return res.status(404).json({ message: "User not found." });
     }
 
-    res.status(200).json({ message: "Post removed from favorites.", data: user });
+    res
+      .status(200)
+      .json({ message: "Post removed from favorites.", data: user });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

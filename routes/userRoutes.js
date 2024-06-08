@@ -15,6 +15,7 @@ const {
   updateUserPhoto,
   followUser,
   unfollowUser,
+  profile,
 } = require("../controllers/userController");
 const authController = require("../controllers/authController");
 const { restrictTo, auth } = require("../middlewares/auth");
@@ -70,4 +71,6 @@ router.patch("/photo/:id", upload.single("photo"), updateUserPhoto);
 router.post("/follow/:userId/:followUserId", followUser);
 //unfollow user
 router.post("/unfollow/:userId/:unfollowUserId", unfollowUser);
+
+router.get("/profile", profile);
 module.exports = router;

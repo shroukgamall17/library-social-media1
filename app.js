@@ -2,7 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const userRoutes = require("./routes/userRoutes");
 const postRoute = require("./routes/postRoute");
-
+const cookieParser = require("cookie-parser");
 const bookRoutes = require("./routes/bookRoutes");
 const ratingRoutes = require("./routes/ratingRoutes");
 const authorRoutes = require("./routes/authorRoutes");
@@ -13,10 +13,11 @@ const cors = require("cors");
 const dotenv = require("dotenv").config();
 const app = express();
 app.use(express.json());
+app.use(cookieParser());
 app.use(
   cors({
     credentials: true,
-    origin: "http://localhost:5174",
+    origin: "http://localhost:5173",
   })
 );
 app.use(express.urlencoded({ extended: false }));
