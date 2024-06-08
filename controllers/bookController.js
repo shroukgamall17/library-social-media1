@@ -4,7 +4,7 @@ const authorModel = require("../models/authorModel");
 // func GetAllBook
 const getAllBook = async (req, res) => {
   try {
-    const books = await bookModel.find({}).populate(['ratings','authorId']);
+    const books = await bookModel.find({}).populate('ratings');
     res.status(200).json({ message: "success", Data: books });
   } catch (err) {
     res.status(500).json({ message: err.message });
