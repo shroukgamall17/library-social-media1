@@ -2,7 +2,6 @@ const express = require("express");
 const mongoose = require("mongoose");
 const userRoutes = require("./routes/userRoutes");
 const postRoute = require("./routes/postRoute");
-
 const bookRoutes = require("./routes/bookRoutes");
 const ratingRoutes = require("./routes/ratingRoutes");
 const authorRoutes = require("./routes/authorRoutes");
@@ -21,8 +20,11 @@ app.use(
     origin: "http://localhost:5173",
   })
 );
+
+
 app.use(bodyParser.json());
 app.use(cookieParser());
+
 app.use(express.urlencoded({ extended: false }));
 mongoose
   .connect(process.env.CONNECTION_DB)
@@ -30,11 +32,11 @@ mongoose
   .catch((err) => console.error(err));
 app.use("/users", userRoutes);
 app.use("/posts", postRoute);
-
 app.use("/books", bookRoutes);
 app.use("/ratings", ratingRoutes);
 app.use("/authors", authorRoutes);
-
+app.use("/image",express.static("bookImage"));
+app.use("/image",express.static("userImages"));
 // app.use("/books", bookRoutes);
 
 app.listen(process.env.PORT, () =>
