@@ -7,7 +7,7 @@ const getAllBook = async (req, res) => {
     const books = await bookModel.find({}).populate({
       path: 'authorId',
       select: 'name' 
-    }).populate('ratings');
+    }).populate('ratings')
     res.status(200).json({ message: "success", Data: books });
   } catch (err) {
     res.status(500).json({ message: err.message });
