@@ -1,17 +1,46 @@
 const mongoose = require("mongoose");
-const Schema = mongoose.Schema;
 
-const postSchema = new Schema(
+const postSchema = new mongoose.Schema(
   {
-    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    description: { type: String, required: true },
-    comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
-    likes: [{ type: Schema.Types.ObjectId, ref: "User" }],
-    type: { type: String, enum: ["quote", "review", "post"], required: true },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: "User",
+    },
+    description: {
+      type: String,
+      required: true,
+    },
+    type: {
+      type: String,
+      enum: ["post", "quote", "review"],
+      required: true,
+    },
+    imageURL: {
+      type: String,
+    },
+    book: {
+      type: String,
+    },
+    rating: {
+      type: Number,
+      min: 0,
+      max: 5,
+    },
+    likes: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+    comments: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Comment",
+      },
+    ],
   },
   { timestamps: true }
 );
 
-const Post = mongoose.model("Post", postSchema);
-
-module.exports = Post;
+module.exports = mongoose.model("Post", postSchema);
