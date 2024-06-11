@@ -17,6 +17,7 @@ const {
   unfollowUser,
   profile,
 } = require("../controllers/userController");
+
 const authController = require("../controllers/authController");
 const { restrictTo, auth } = require("../middlewares/auth");
 //upload image
