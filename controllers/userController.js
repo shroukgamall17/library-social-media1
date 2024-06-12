@@ -6,11 +6,11 @@ const User = require("../models/userModel");
 
 
 const nodemailer = require('nodemailer')
-const crypto = require('crypto');;
+const crypto = require('crypto');
 
 const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find({})
+    const users = await User.find({}).populate('favouriteBooks')
       .sort({ createdAt: -1 })
       .select(["-password", "-confirmPassword"]);
     res.status(201).json({
@@ -112,6 +112,7 @@ const getSingleUser = async (req, res) => {
 const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
+    
     const { name } = req.body;
 
     const updateUser = await User.findByIdAndUpdate(
