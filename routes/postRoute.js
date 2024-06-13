@@ -2,7 +2,7 @@ const express = require("express");
 const path = require("path");
 const fs = require("fs");
 const router = express.Router();
-
+const authController = require("../controllers/authController.js");
 const postController = require("../controllers/postController");
 const { auth, restrictTo } = require("../middlewares/auth.js");
 const multer = require("multer");
@@ -19,7 +19,12 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-router.post("/", upload.single("image"), auth, postController.createPost);
+router.post(
+  "/",
+  upload.single("image"),
+  authController.auth,
+  postController.createPost
+);
 router.get("/", postController.getAllPosts);
 router.get("/single/:id", postController.getPostById);
 router.delete("/:id", postController.deletePost);

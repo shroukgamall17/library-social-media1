@@ -19,7 +19,7 @@ const {
 } = require("../controllers/userController");
 
 const authController = require("../controllers/authController");
-const { restrictTo, auth } = require("../middlewares/auth");
+
 //upload image
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {

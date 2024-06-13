@@ -294,7 +294,7 @@ const profile = async (req, res) => {
     console.log(user);
     res.status(200).json(user);
   } catch (error) {
-    console.log(error);
+    console.log("profile", error);
     res.status(400).json({ error: error });
   }
 };

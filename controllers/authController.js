@@ -149,11 +149,8 @@ exports.auth = async (req, res, next) => {
   try {
     const { token } = req.cookies;
     if (!token) return res.status(404).json({ message: "please login" });
-    let { email, id, name } = await promisify(jwt.verify)(
-      token,
-      process.env.SECRET_KEY
-    );
-    req.user = { email, id, name };
+    let { data } = await promisify(jwt.verify)(token, process.env.SECRET_KEY);
+    req.user = { ...data };
     next();
   } catch (error) {
     res.status(400).json({ error });

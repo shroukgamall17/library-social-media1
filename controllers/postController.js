@@ -3,8 +3,7 @@ const User = require("../models/userModel");
 
 //Create a new post
 exports.createPost = async (req, res) => {
-  const { userId, description, type } = req.body;
-  console.log(req.body);
+  const { description, type } = req.body;
 
   const imageURL = req.file ? req.file.filename : "";
 
@@ -12,7 +11,7 @@ exports.createPost = async (req, res) => {
 
   try {
     const newPostData = {
-      userId,
+      userId: req.user.id,
       type,
       imageURL,
       description,

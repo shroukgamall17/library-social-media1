@@ -20,8 +20,7 @@ app.use(
   })
 );
 
-app.use(bodyParser.json());
-app.use(cookieParser());
+// app.use(bodyParser.json());
 
 app.use(express.urlencoded({ extended: false }));
 mongoose
