@@ -2,13 +2,10 @@ const express = require("express");
 const mongoose = require("mongoose");
 const userRoutes = require("./routes/userRoutes");
 const postRoute = require("./routes/postRoute");
+const commentRoute = require("./routes/commentRoute");
 const bookRoutes = require("./routes/bookRoutes");
 const ratingRoutes = require("./routes/ratingRoutes");
 const authorRoutes = require("./routes/authorRoutes");
-const commentRoutes = require("./routes/commentRoute");
-
-// const bookRoutes = require("./routes/bookRoutes");
-
 const cors = require("cors");
 const dotenv = require("dotenv").config();
 const app = express();
@@ -33,10 +30,11 @@ mongoose
   .catch((err) => console.error(err));
 app.use("/users", userRoutes);
 app.use("/posts", postRoute);
+app.use("/comment", commentRoute);
 app.use("/books", bookRoutes);
 app.use("/ratings", ratingRoutes);
 app.use("/authors", authorRoutes);
-app.use("/comment", commentRoutes);
+app.use("/comment", commentRoute);
 app.use("/image", express.static("bookImage"));
 app.use("/image", express.static("userImages"));
 // app.use("/books", bookRoutes);
