@@ -3,8 +3,7 @@ const User = require("../models/userModel");
 
 //Create a new post
 exports.createPost = async (req, res) => {
-  const { userId, description, type } = req.body;
-  console.log(req.body);
+  const { description, type } = req.body;
 
   const imageURL = req.file ? req.file.filename : "";
 
@@ -12,7 +11,7 @@ exports.createPost = async (req, res) => {
 
   try {
     const newPostData = {
-      userId,
+      userId: req.user.id,
       type,
       imageURL,
       description,
@@ -39,7 +38,11 @@ exports.createPost = async (req, res) => {
 // get ALl posts
 exports.getAllPosts = async (req, res) => {
   try {
-    const posts = await Post.find();
+    const posts = await Post.find()
+      .sort({ createdAt: -1 })
+      .populate(["likes"])
+      // .populate(["comments"])
+      .populate("userId");
     res.status(200).json(posts);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -48,10 +51,15 @@ exports.getAllPosts = async (req, res) => {
 
 // get certain post by id
 exports.getPostById = async (req, res) => {
-  console.log("fdfdgfd");
   try {
-    const post = await Post.findById(req.params.id);
-    if (!post) return res.status(404).json({ message: "Post not found" });
+    const post = await Post.findById(req.params.id).populate([
+      { path: "comments", populate: [{ path: "userId" }] },
+      "likes",
+      "userId",
+    ]);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
     res.status(200).json(post);
   } catch (error) {
     res.status(500).json({ message: error.message });

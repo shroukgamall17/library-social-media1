@@ -139,9 +139,10 @@ exports.unlikeComment = async (req, res) => {
     if (!updatedComment) {
       return res.status(404).json({ error: "Comment not found" });
     }
-
+    console.log(updatedComment);
     res.status(200).json({
       message: "Comment unliked successfully",
+      updatedComment,
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
