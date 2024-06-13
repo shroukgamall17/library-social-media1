@@ -39,6 +39,9 @@ const router = express.Router();
 // Login User
 router.post("/login", authController.login);
 
+//logout
+router.post("/logout", authController.logout);
+
 //register new User
 router.post("/register", authController.signup);
 

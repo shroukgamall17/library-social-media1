@@ -98,7 +98,7 @@ const deleteUser = async (req, res) => {
 const getSingleUser = async (req, res) => {
   try {
     const { id } = req.params;
-    console.log(req.params);
+    // console.log(req.params);
     const singleUser = await User.findById(id).select([
       "-password",
       "-confirmPassword",

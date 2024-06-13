@@ -9,7 +9,7 @@ const crypto = require("crypto");
 exports.signup = async (req, res) => {
   try {
     const { name, email, password, confirmPassword } = req.body;
-    console.log(req.body)
+    console.log(req.body);
     if (!name || !email || !password || !confirmPassword) {
       return res.status(400).json({ message: "All fields are required" });
     }
@@ -62,6 +62,11 @@ exports.login = async (req, res) => {
     console.log(error);
     res.status(400).json({ message: "Invalid credentials", error });
   }
+};
+exports.logout = async (req, res) => {
+  res.clearCookie("token").status(200).json({
+    message: "Logged out successfully",
+  });
 };
 exports.forgotPassword = async (req, res) => {
   const user = await User.findOne({ email: req.body.email });
