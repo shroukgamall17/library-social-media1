@@ -2,6 +2,7 @@ const Comment = require("../models/commentModel");
 const Post = require("../models/postModel");
 const mongoose = require("mongoose");
 const { createNotification } = require("./notificationController");
+const User = require("../models/userModel");
 
 // Create a new comment
 exports.createComment = async (req, res) => {
@@ -21,8 +22,16 @@ exports.createComment = async (req, res) => {
 
     const post = await Post.findById(postId);
     console.log(post)
+
+      // Fetch the user's details
+      const commentingUser = await User.findById(userId).select('name');
+      if (!commentingUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+  
+      const userName = commentingUser.name;
     const postOwnerId = post.userId;
-    await createNotification(userId, postOwnerId, 'comment', 'Someone commented on your post')
+    await createNotification(userId, postOwnerId, 'comment', `${userName} commented on your post`)
 
     res.status(201).json(comment);
   } catch (error) {
@@ -119,7 +128,14 @@ exports.likeComment = async (req, res) => {
     //console.log(comment)
     const commentOwnerId = comment.userId;
     console.log(commentOwnerId)
-    await createNotification(userId, commentOwnerId, 'like', 'Someone liked on your comment')
+
+    const likingUser = await User.findById(userId).select('name');
+    if (!likingUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const userName = likingUser.name;
+    await createNotification(userId, commentOwnerId, 'like', `${userName} liked on your comment`)
     res.status(200).json({
       message: "Comment liked successfully",
     });

@@ -29,12 +29,14 @@ exports.createPost = async (req, res) => {
 
     const savedPost = await newPost.save();
 
-    const userFollowers = await User.findById(req.user.id).select('followers');
-    const followersIds = userFollowers.followers;
+    const postingUser = await User.findById(req.user.id).select('name followers');
+    //const userFollowers = await User.findById(req.user.id).select('followers');
+    const userName = postingUser.name;
+    const followersIds = postingUser.followers;
 
     for (const followerId of followersIds) {
       try {
-        await createNotification(req.user.id, followerId, 'new_post', 'A user you follow has posted a new post');
+        await createNotification(req.user.id, followerId, 'new_post', `${userName} has posted a new post`);
         console.log(`Notification sent to followerId: ${followerId}`);
       } catch (notificationError) {
         console.error(`Failed to send notification to followerId: ${followerId}`, notificationError);
@@ -143,11 +145,13 @@ exports.likePost = async (req, res) => {
       post.likes.push(req.params.userId);
       await post.save();
 
-    
+       // Fetch the user's details
+       const user = await User.findById(req.params.userId);
+       if (!user) return res.status(404).json({ message: "User not found" });
       console.log("Sender ID:", req.params.userId);
       console.log("Receiver ID (Post Owner):", post.userId);
 
-      await createNotification(req.params.userId, post.userId, 'like', 'Someone liked your post');
+      await createNotification(req.params.userId, post.userId, 'like', `${user.name} liked your post`);
 
       res.status(200).json({ message: "Post liked" });
     } else {
@@ -197,8 +201,9 @@ exports.savePost = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found." });
     }
-
-    await createNotification(userId, post.userId, 'save', 'Someone saved your post');
+    const savingUser = await User.findById(userId);
+    if (!savingUser) return res.status(404).json({ message: "User not found" });
+    await createNotification(userId, post.userId, 'save', `${savingUser.name} saved your post`);
 
     res
       .status(200)
