@@ -13,10 +13,16 @@ const userSchema = new mongoose.Schema(
     },
     password: { type: String, required: true, select: false },
     photo: { type: String },
-    savedPosts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Post' }],
-    favouriteBooks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Book' }],
+    savedPosts: [{ type: mongoose.Schema.Types.ObjectId, ref: "Post" }],
+    favouriteBooks: [{ type: mongoose.Schema.Types.ObjectId, ref: "Book" }],
     followers: [{ type: mongoose.SchemaTypes.ObjectId, ref: "User" }],
     following: [{ type: mongoose.SchemaTypes.ObjectId, ref: "User" }],
+    notifications: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Notification",
+      },
+    ],
     confirmPassword: { type: String, required: true, select: false },
     role: { type: String, enum: ["admin", "user"], default: "user" },
     passwordResetToken: String,

@@ -4,10 +4,7 @@ const authorModel = require("../models/authorModel");
 // func GetAllBook
 const getAllBook = async (req, res) => {
   try {
-    const books = await bookModel.find({}).populate({
-      path: 'authorId',
-      select: 'name' 
-    }).populate('ratings')
+    const books = await bookModel.find({}).populate(['authorId','ratings'])
     res.status(200).json({ message: "success", Data: books });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -102,6 +99,12 @@ const addBook = async (req, res) => {
         });
     }
 
+       // Check if author exists
+       const existingAuthor = await authorModel.findById(authorId);
+       if (!existingAuthor) {
+         return res.status(404).json({ message: "Author not found." });
+       }
+
     // Create the new book
     const newBook = await bookModel.create({
       authorId,
@@ -119,6 +122,13 @@ const addBook = async (req, res) => {
       { new: true, useFindAndModify: false }
     );
 
+    //  // Send notification to the user
+    //  await createNotification(
+    //   null, 
+    //   authorId,
+    //   "new-book",
+    //   `Book "${book.title}" has been added.`
+    // );
     res.status(200).json({ message: "Added successfully", data: newBook });
   } catch (err) {
     res.status(500).json({ message: err.message });

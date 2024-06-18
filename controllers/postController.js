@@ -1,6 +1,6 @@
 const Post = require("../models/postModel");
 const User = require("../models/userModel");
-
+const { createNotification } = require("./notificationController");
 //Create a new post
 exports.createPost = async (req, res) => {
   const { description, type } = req.body;
@@ -28,6 +28,23 @@ exports.createPost = async (req, res) => {
     const newPost = new Post(newPostData);
 
     const savedPost = await newPost.save();
+
+    const userFollowers = await User.findById(req.user.id).select('followers');
+    const followersIds = userFollowers.followers;
+
+    for (const followerId of followersIds) {
+      try {
+        await createNotification(req.user.id, followerId, 'new_post', 'A user you follow has posted a new post');
+        console.log(`Notification sent to followerId: ${followerId}`);
+      } catch (notificationError) {
+        console.error(`Failed to send notification to followerId: ${followerId}`, notificationError);
+      }
+    }
+
+    // const notifications = followersIds.map(followerId =>
+    //   createNotification(req.user.id, followerId, 'new_post', 'A user you follow has posted a new post')
+    // );
+    // await Promise.all(notifications);
 
     res.status(201).json(savedPost);
   } catch (error) {
@@ -125,6 +142,13 @@ exports.likePost = async (req, res) => {
     if (!post.likes.includes(req.params.userId)) {
       post.likes.push(req.params.userId);
       await post.save();
+
+    
+      console.log("Sender ID:", req.params.userId);
+      console.log("Receiver ID (Post Owner):", post.userId);
+
+      await createNotification(req.params.userId, post.userId, 'like', 'Someone liked your post');
+
       res.status(200).json({ message: "Post liked" });
     } else {
       res.status(400).json({ message: "User already liked this post" });
@@ -173,6 +197,8 @@ exports.savePost = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found." });
     }
+
+    await createNotification(userId, post.userId, 'save', 'Someone saved your post');
 
     res
       .status(200)

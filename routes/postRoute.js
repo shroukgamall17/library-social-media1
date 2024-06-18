@@ -23,7 +23,7 @@ router.post(
   "/",
   upload.single("image"),
   authController.auth,
-  postController.createPost
+  postController.createPost 
 );
 router.get("/", postController.getAllPosts);
 router.get("/single/:id", postController.getPostById);

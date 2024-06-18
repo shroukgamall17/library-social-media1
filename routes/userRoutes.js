@@ -53,8 +53,8 @@ router.post("/resetPassword/:token", authController.resetPassword);
 router.post("/updatePassword", authController.updatePassword);
 
 // get single user
-// router.get("/single/:id", getSingleUser);
-router.route(":id").get(getSingleUser).delete(deleteUser).patch(updateUser);
+router.get("/single/:id", getSingleUser);
+router.route(":id").delete(deleteUser).patch(updateUser);
 //get All Users
 router.get("/", getAllUsers);
 //delete user

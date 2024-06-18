@@ -6,6 +6,7 @@ const User = require("../models/userModel");
 
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
+const { createNotification } = require("./notificationController");
 
 const getAllUsers = async (req, res) => {
   try {
@@ -97,7 +98,9 @@ const deleteUser = async (req, res) => {
 
 const getSingleUser = async (req, res) => {
   try {
+   
     const { id } = req.params;
+    
     // console.log(req.params);
     const singleUser = await User.findById(id).select([
       "-password",
@@ -245,7 +248,7 @@ const followUser = async (req, res) => {
     // Add the follower to the followed user's followers list
     followUser.followers.push(userId);
     await followUser.save();
-
+    await createNotification(userId, followUserId, 'follow', 'Someone followed you');
     res.status(200).json({ message: "Followed user successfully" });
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });
@@ -295,7 +298,7 @@ const profile = async (req, res) => {
     res.status(200).json(user);
   } catch (error) {
     console.log("profile", error);
-    res.status(400).json({ error: error });
+    res.status(400).json({ error: error.message });
   }
 };
 module.exports = {
