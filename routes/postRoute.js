@@ -1,31 +1,36 @@
 const express = require("express");
-const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 const router = express.Router();
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-      const uploadDir = path.join(__dirname, "../userImages");
-      // تأكد من أن المجلد موجود، وإذا لم يكن موجودًا، قم بإنشائه
-      if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true });
-      }
-      cb(null, uploadDir);
-    },
-    filename: (req, file, cb) => {
-      cb(null, new Date().toISOString().replace(/:/g, "-") + file.originalname);
-    },
-  });
-  const upload = multer({ storage: storage });
+const authController = require("../controllers/authController.js");
 const postController = require("../controllers/postController");
+const { auth, restrictTo } = require("../middlewares/auth.js");
+const multer = require("multer");
 
-router.post("/:userId", upload.single("photo"), postController.createPost);
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "postImages");
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+  },
+});
+
+const upload = multer({ storage: storage });
+
+router.post(
+  "/",
+  upload.single("image"),
+  authController.auth,
+  postController.createPost 
+);
 router.get("/", postController.getAllPosts);
 router.get("/single/:id", postController.getPostById);
 router.delete("/:id", postController.deletePost);
-router.patch("/:id",upload.single("photo"), postController.updatePost);
+router.patch("/:id", upload.single("photo"), postController.updatePost);
 router.post("/like/:userId/:postId", postController.likePost);
 router.post("/dislike/:userId/:postId", postController.dislikePost);
-router.post('/save/:userId/:postId', postController.savePost);
-router.post('/unsave/:userId/:postId', postController.unSavePost);
+router.post("/save/:userId/:postId", postController.savePost);
+router.post("/unsave/:userId/:postId", postController.unSavePost);
 module.exports = router;

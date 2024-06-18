@@ -15,10 +15,11 @@ const {
   updateUserPhoto,
   followUser,
   unfollowUser,
+  profile,
 } = require("../controllers/userController");
 
 const authController = require("../controllers/authController");
-const { restrictTo, auth } = require("../middlewares/auth");
+
 //upload image
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -38,6 +39,9 @@ const router = express.Router();
 // Login User
 router.post("/login", authController.login);
 
+//logout
+router.post("/logout", authController.logout);
+
 //register new User
 router.post("/register", authController.signup);
 
@@ -49,8 +53,8 @@ router.post("/resetPassword/:token", authController.resetPassword);
 router.post("/updatePassword", authController.updatePassword);
 
 // get single user
-// router.get("/single/:id", getSingleUser);
-router.route(":id").get(getSingleUser).delete(deleteUser).patch(updateUser);
+router.get("/single/:id", getSingleUser);
+router.route(":id").delete(deleteUser).patch(updateUser);
 //get All Users
 router.get("/", getAllUsers);
 //delete user
@@ -71,4 +75,6 @@ router.patch("/photo/:id", upload.single("photo"), updateUserPhoto);
 router.post("/follow/:userId/:followUserId", followUser);
 //unfollow user
 router.post("/unfollow/:userId/:unfollowUserId", unfollowUser);
+
+router.get("/profile", profile);
 module.exports = router;

@@ -1,16 +1,17 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+let { promisify } = require("util");
 
 const User = require("../models/userModel");
 
-
-
-const nodemailer = require('nodemailer')
-const crypto = require('crypto');
+const nodemailer = require("nodemailer");
+const crypto = require("crypto");
+const { createNotification } = require("./notificationController");
 
 const getAllUsers = async (req, res) => {
   try {
     const users = await User.find({})
+      .populate("favouriteBooks")
       .sort({ createdAt: -1 })
       .select(["-password", "-confirmPassword"]);
     res.status(201).json({
@@ -97,8 +98,10 @@ const deleteUser = async (req, res) => {
 
 const getSingleUser = async (req, res) => {
   try {
+   
     const { id } = req.params;
-    console.log(req.params);
+    
+    // console.log(req.params);
     const singleUser = await User.findById(id).select([
       "-password",
       "-confirmPassword",
@@ -112,7 +115,7 @@ const getSingleUser = async (req, res) => {
 const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     const { name } = req.body;
 
     const updateUser = await User.findByIdAndUpdate(
@@ -245,7 +248,7 @@ const followUser = async (req, res) => {
     // Add the follower to the followed user's followers list
     followUser.followers.push(userId);
     await followUser.save();
-
+    await createNotification(userId, followUserId, 'follow', 'Someone followed you');
     res.status(200).json({ message: "Followed user successfully" });
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });
@@ -282,7 +285,22 @@ const unfollowUser = async (req, res) => {
     res.status(500).send("Server error.");
   }
 };
-
+const profile = async (req, res) => {
+  try {
+    console.log("hello");
+    const { token } = req.cookies;
+    if (!token) return res.status(404).json(null);
+    let {
+      data: { id },
+    } = await promisify(jwt.verify)(token, process.env.SECRET_KEY);
+    const user = await User.findById(id);
+    console.log(user);
+    res.status(200).json(user);
+  } catch (error) {
+    console.log("profile", error);
+    res.status(400).json({ error: error.message });
+  }
+};
 module.exports = {
   getAllUsers,
   getSingleUser,
@@ -295,4 +313,5 @@ module.exports = {
   updateUserPhoto,
   followUser,
   unfollowUser,
+  profile,
 };

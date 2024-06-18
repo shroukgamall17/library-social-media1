@@ -4,22 +4,75 @@ const authorModel = require("../models/authorModel");
 // func GetAllBook
 const getAllBook = async (req, res) => {
   try {
-    const books = await bookModel.find({}).populate('ratings');
+    const books = await bookModel.find({}).populate(['authorId','ratings'])
     res.status(200).json({ message: "success", Data: books });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
+
 // GET all category
 const getAllCategory = async (req, res) => {
   try {
-    const category = await bookModel.find({});
-    res.status(200).json({ message: "success", Data: category });
+    const categories = await bookModel.distinct('category');
+    res.status(200).json({ message: "success", data: categories });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
+
 //add book
+
+// const addBook = async (req, res) => {
+//   try {
+//     const files = req.files;
+//     let Pdf = "";
+//     let cover = "";
+
+//     if (files && files.Pdf) {
+//       Pdf = files.Pdf[0].filename;
+//     }
+
+//     if (files && files.cover) {
+//       cover = files.cover[0].filename;
+//     }
+//     const { title, description, category } = req.body;
+//     const { authorId } = req.params;
+
+//     // Check if required fields are missing
+//     if (!title || !description || !category) {
+//       return res
+//         .status(400)
+//         .json({
+//           message: "Title, description, and category are required fields.",
+//         });
+//     }
+
+//     // Create the new book
+//     const newBook = await bookModel.create({
+//       authorId,
+//       title,
+//       description,
+//       category,
+//       Pdf,
+//       cover,
+//     });
+
+//     // Update the author with the new book's ID
+//     await authorModel.findByIdAndUpdate(
+//       authorId,
+//       { $push: { books: newBook._id } }, 
+//       { new: true, useFindAndModify: false }
+//     );
+
+//     res.status(200).json({ message: "Added successfully", data: newBook });
+//   } catch (err) {
+//     res.status(500).json({ message: err.message });
+//   }
+// };
+
+
+
 
 const addBook = async (req, res) => {
   try {
@@ -34,17 +87,23 @@ const addBook = async (req, res) => {
     if (files && files.cover) {
       cover = files.cover[0].filename;
     }
-    const { title, description, category } = req.body;
-    const { authorId } = req.params;
+    const { title, description, category,authorId } = req.body;
+    // const { authorId } = req.params;
 
     // Check if required fields are missing
-    if (!title || !description || !category) {
+    if (!title || !description || !category || !authorId) {
       return res
         .status(400)
         .json({
-          message: "Title, description, and category are required fields.",
+          message: "Title, description, category, and authorId are required fields.",
         });
     }
+
+       // Check if author exists
+       const existingAuthor = await authorModel.findById(authorId);
+       if (!existingAuthor) {
+         return res.status(404).json({ message: "Author not found." });
+       }
 
     // Create the new book
     const newBook = await bookModel.create({
@@ -63,12 +122,18 @@ const addBook = async (req, res) => {
       { new: true, useFindAndModify: false }
     );
 
+    //  // Send notification to the user
+    //  await createNotification(
+    //   null, 
+    //   authorId,
+    //   "new-book",
+    //   `Book "${book.title}" has been added.`
+    // );
     res.status(200).json({ message: "Added successfully", data: newBook });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
-
 
 
 //func update

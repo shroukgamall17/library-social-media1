@@ -1,22 +1,15 @@
 const Comment = require("../models/commentModel");
 const Post = require("../models/postModel");
 const mongoose = require("mongoose");
+const { createNotification } = require("./notificationController");
 
 // Create a new comment
 exports.createComment = async (req, res) => {
   try {
     // console.log(req.body);
     const { userId, description, postId } = req.body;
-
-    // const newComment = new Comment({
-    //   userId: mongoose.Types.ObjectId(userId),
-    //   description,
-    //   postId: mongoose.Types.ObjectId(postId),
-    // });
-
-    // const savedComment = await newComment.save();
-    const comment = await Comment.create({
-      // userId: new mongoose.Types.ObjectId(userId),
+    //console.log(postId)
+    const comment = await Comment.create({   
       userId,
       description,
       postId,
@@ -25,6 +18,11 @@ exports.createComment = async (req, res) => {
     await Post.findByIdAndUpdate(postId, {
       $push: { comments: comment._id },
     });
+
+    const post = await Post.findById(postId);
+    console.log(post)
+    const postOwnerId = post.userId;
+    await createNotification(userId, postOwnerId, 'comment', 'Someone commented on your post')
 
     res.status(201).json(comment);
   } catch (error) {
@@ -103,19 +101,25 @@ exports.deleteComment = async (req, res) => {
 // Like a comment
 exports.likeComment = async (req, res) => {
   try {
+   
     const { commentId } = req.params;
     const { userId } = req.body;
-
+    //console.log(userId)
     const updatedComment = await Comment.findByIdAndUpdate(
       commentId,
       { $addToSet: { likes: userId } },
       { new: true }
     );
-
+   //console.log(updatedComment)
     if (!updatedComment) {
       return res.status(404).json({ error: "Comment not found" });
     }
 
+    const comment = await Comment.findById(commentId);
+    //console.log(comment)
+    const commentOwnerId = comment.userId;
+    console.log(commentOwnerId)
+    await createNotification(userId, commentOwnerId, 'like', 'Someone liked on your comment')
     res.status(200).json({
       message: "Comment liked successfully",
     });
@@ -139,9 +143,10 @@ exports.unlikeComment = async (req, res) => {
     if (!updatedComment) {
       return res.status(404).json({ error: "Comment not found" });
     }
-
+    console.log(updatedComment);
     res.status(200).json({
       message: "Comment unliked successfully",
+      updatedComment,
     });
   } catch (error) {
     res.status(500).json({ error: error.message });

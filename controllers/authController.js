@@ -9,7 +9,7 @@ const crypto = require("crypto");
 exports.signup = async (req, res) => {
   try {
     const { name, email, password, confirmPassword } = req.body;
-    console.log(req.body)
+    console.log(req.body);
     if (!name || !email || !password || !confirmPassword) {
       return res.status(400).json({ message: "All fields are required" });
     }
@@ -62,6 +62,11 @@ exports.login = async (req, res) => {
     console.log(error);
     res.status(400).json({ message: "Invalid credentials", error });
   }
+};
+exports.logout = async (req, res) => {
+  res.clearCookie("token").status(200).json({
+    message: "Logged out successfully",
+  });
 };
 exports.forgotPassword = async (req, res) => {
   const user = await User.findOne({ email: req.body.email });
@@ -144,11 +149,8 @@ exports.auth = async (req, res, next) => {
   try {
     const { token } = req.cookies;
     if (!token) return res.status(404).json({ message: "please login" });
-    let { email, id, name } = await promisify(jwt.verify)(
-      token,
-      process.env.SECRET_KEY
-    );
-    req.user = { email, id, name };
+    let { data } = await promisify(jwt.verify)(token, process.env.SECRET_KEY);
+    req.user = { ...data };
     next();
   } catch (error) {
     res.status(400).json({ error });

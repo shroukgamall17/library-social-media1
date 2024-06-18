@@ -1,62 +1,78 @@
 const Post = require("../models/postModel");
 const User = require("../models/userModel");
-
-
+const { createNotification } = require("./notificationController");
+//Create a new post
 exports.createPost = async (req, res) => {
+  const { description, type } = req.body;
+
+  const imageURL = req.file ? req.file.filename : "";
+
+  const { book, rating } = req.body;
+
   try {
-    const files = req.file;
-    let photo = "";
-
-    if (files) {
-      photo = files.filename;
-    }
-    //console.log(req.body);
-    const { description, type } = req.body;
-    const { userId } = req.params;
-    // Check if required fields are missing
-    if (!description || !userId) {
-      return res.status(400).json({
-        message: "userId, description are required fields.",
-      });
-    }
-
-    // Create the new post
-    const newBost = await Post.create({
-      userId,
+    const newPostData = {
+      userId: req.user.id,
       type,
+      imageURL,
       description,
-      photo
-    });
+    };
 
-    await User.findByIdAndUpdate(
-      userId,
-      { $push: { posts: newBost._id } },
-      { new: true }
-    );
+    if (book) {
+      newPostData.book = book;
+    }
 
-    res.status(200).json({ message: "Added successfully", data: newBost });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+    if (rating) {
+      newPostData.rating = rating;
+    }
+
+    const newPost = new Post(newPostData);
+
+    const savedPost = await newPost.save();
+
+    const userFollowers = await User.findById(req.user.id).select('followers');
+    const followersIds = userFollowers.followers;
+
+    for (const followerId of followersIds) {
+      try {
+        await createNotification(req.user.id, followerId, 'new_post', 'A user you follow has posted a new post');
+        console.log(`Notification sent to followerId: ${followerId}`);
+      } catch (notificationError) {
+        console.error(`Failed to send notification to followerId: ${followerId}`, notificationError);
+      }
+    }
+
+    // const notifications = followersIds.map(followerId =>
+    //   createNotification(req.user.id, followerId, 'new_post', 'A user you follow has posted a new post')
+    // );
+    // await Promise.all(notifications);
+
+    res.status(201).json(savedPost);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
   }
 };
 
-//get all posts
+// get ALl posts
 exports.getAllPosts = async (req, res) => {
   try {
-    const posts = await Post.find().populate(["likes"]);
+    const posts = await Post.find()
+      .sort({ createdAt: -1 })
+      .populate(["likes"])
+      // .populate(["comments"])
+      .populate("userId");
     res.status(200).json(posts);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-//get post by id
+// get certain post by id
 exports.getPostById = async (req, res) => {
-  console.log('fdfdgfd')
   try {
     const post = await Post.findById(req.params.id).populate([
-      //   "comments",
+      { path: "comments", populate: [{ path: "userId" }] },
       "likes",
+      "userId",
     ]);
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
@@ -76,7 +92,7 @@ exports.updatePost = async (req, res) => {
     }
     const updatedPost = await Post.findByIdAndUpdate(
       req.params.id,
-      { description,photo },
+      { description, photo },
       { new: true }
     );
     if (!updatedPost) {
@@ -90,63 +106,69 @@ exports.updatePost = async (req, res) => {
 
 exports.deletePost = async (req, res) => {
   try {
-    const deletedPost = await Post.findByIdAndDelete(req.params.id);
-    if (!deletedPost) {
-      return res.status(404).json({ message: "Post not found" });
-    }
+    const post = await Post.findByIdAndDelete(req.params.id);
+    if (!post) return res.status(404).json({ message: "Post not found" });
     res.status(200).json({ message: "Post deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-exports.likePost = async (req, res) => {
+// update a post
+exports.updatePost = async (req, res) => {
+  const { userId, description, type, book, rating } = req.body;
+  const imageURL = req.file ? req.file.filename : "";
+
   try {
-    console.log(req.params);
-    const { userId, postId } = req.params;
-
-    const post = await Post.findById(postId);
-    if (!post) {
+    const updatedPost = await Post.findByIdAndUpdate(
+      req.params.id,
+      { userId, description, type, imageURL, book, rating },
+      { new: true }
+    );
+    if (!updatedPost)
       return res.status(404).json({ message: "Post not found" });
-    }
-
-    if (post.likes.includes(userId)) {
-      return res.status(400).json({ message: "You already liked this post" });
-    }
-
-    post.likes.push(userId);
-    // post.dislikes = post.dislikes.filter((id) => id.toString() !== userId);
-
-    await post.save();
-
-    res.status(200).json({ message: "Liked post successfully" });
-  } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
+    res.status(200).json(updatedPost);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
   }
 };
 
+// like a post
+exports.likePost = async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.postId);
+    if (!post) return res.status(404).json({ message: "Post not found" });
+
+    if (!post.likes.includes(req.params.userId)) {
+      post.likes.push(req.params.userId);
+      await post.save();
+
+    
+      console.log("Sender ID:", req.params.userId);
+      console.log("Receiver ID (Post Owner):", post.userId);
+
+      await createNotification(req.params.userId, post.userId, 'like', 'Someone liked your post');
+
+      res.status(200).json({ message: "Post liked" });
+    } else {
+      res.status(400).json({ message: "User already liked this post" });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// dislike a post
 exports.dislikePost = async (req, res) => {
   try {
-    const { userId, postId } = req.params;
+    const post = await Post.findById(req.params.postId);
+    if (!post) return res.status(404).json({ message: "Post not found" });
 
-    const post = await Post.findById(postId);
-    if (!post) {
-      return res.status(404).json({ message: "Post not found" });
-    }
-
-    // if (post.dislikes.includes(userId)) {
-    //   return res
-    //     .status(400)
-    //     .json({ message: "You already disliked this post" });
-    // }
-
-    post.likes = post.likes.filter((id) => id.toString() !== userId);
-
+    post.likes = post.likes.filter((userId) => userId !== req.params.userId);
     await post.save();
-
-    res.status(200).json({ message: "Disliked post successfully" });
-  } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
+    res.status(200).json({ message: "Post disliked" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -155,7 +177,9 @@ exports.savePost = async (req, res) => {
     const { userId, postId } = req.params;
 
     if (!userId || !postId) {
-      return res.status(400).json({ message: "User ID and Post ID are required." });
+      return res
+        .status(400)
+        .json({ message: "User ID and Post ID are required." });
     }
 
     const post = await Post.findById(postId);
@@ -174,19 +198,24 @@ exports.savePost = async (req, res) => {
       return res.status(404).json({ message: "User not found." });
     }
 
-    res.status(200).json({ message: "Post added to user's posts.", data: user });
+    await createNotification(userId, post.userId, 'save', 'Someone saved your post');
+
+    res
+      .status(200)
+      .json({ message: "Post added to user's posts.", data: user });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
-
 
 exports.unSavePost = async (req, res) => {
   try {
     const { userId, postId } = req.params;
 
     if (!userId || !postId) {
-      return res.status(400).json({ message: "User ID and Post ID are required." });
+      return res
+        .status(400)
+        .json({ message: "User ID and Post ID are required." });
     }
 
     // Remove the post from the user's favorite posts array
@@ -200,7 +229,9 @@ exports.unSavePost = async (req, res) => {
       return res.status(404).json({ message: "User not found." });
     }
 
-    res.status(200).json({ message: "Post removed from favorites.", data: user });
+    res
+      .status(200)
+      .json({ message: "Post removed from favorites.", data: user });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

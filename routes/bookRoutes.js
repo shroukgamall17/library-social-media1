@@ -33,8 +33,8 @@ const upload = multer({ storage: storage });
 const router = express.Router();
 // Get All Book
 router.get("/", getAllBook);
-//get all category
-router.get("/book/category", getAllCategory);
+// Get All Category
+router.get("/categories", getAllCategory);
 //search by category
 router.get("/searchCategory", searchByCategory);
 //search by title
@@ -42,8 +42,16 @@ router.get("/searchTitle", searchByTitle);
 
 //Add book
 // router.post('/',upload.single('pdf'),addBook);
+// router.post(
+//   "/:authorId",
+//   upload.fields([
+//     { name: "Pdf", maxCount: 1 },
+//     { name: "cover", maxCount: 1 },
+//   ]),
+//   addBook
+// );
 router.post(
-  "/:authorId",
+  "/",
   upload.fields([
     { name: "Pdf", maxCount: 1 },
     { name: "cover", maxCount: 1 },
