@@ -187,15 +187,31 @@ const searchByCategory = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
+// const searchByTitle = async (req, res) => {
+//   try {
+//     const { title } = req.query;
+//     const findBook = await bookModel.find({ title });
+//     res.status(200).json(findBook);
+//   } catch (error) {
+//     return res.status(500).json({ message: error.message });
+//   }
+// };
 const searchByTitle = async (req, res) => {
   try {
     const { title } = req.query;
-    const findBook = await bookModel.find({ title });
+    
+    if (!title) {
+      return res.status(400).json({ message: 'Title parameter is required' });
+    }
+    
+    const findBook = await bookModel.find({ title: { $regex: new RegExp(title, 'i') } });
+    
     res.status(200).json(findBook);
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
 };
+
 
 const addFavoriteBook = async (req, res) => {
   try {
