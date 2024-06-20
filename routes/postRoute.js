@@ -26,6 +26,7 @@ router.post(
   postController.createPost
 );
 router.get("/", postController.getAllPosts);
+router.get("/:id", postController.getUserPosts);
 router.get("/single/:id", postController.getPostById);
 router.delete("/:id", postController.deletePost);
 router.patch("/:id", upload.single("photo"), postController.updatePost);

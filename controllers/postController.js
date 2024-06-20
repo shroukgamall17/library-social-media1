@@ -65,7 +65,21 @@ exports.getPostById = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
+exports.getUserPosts = async (req, res) => {
+  try {
+    const posts = await Post.find({ userId: req.params.id }).populate([
+      { path: "comments", populate: [{ path: "userId" }] },
+      "likes",
+      "userId",
+    ]);
+    if (!posts) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+    res.status(200).json(posts);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 exports.updatePost = async (req, res) => {
   try {
     const { description } = req.body;

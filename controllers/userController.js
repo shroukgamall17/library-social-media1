@@ -284,14 +284,12 @@ const unfollowUser = async (req, res) => {
 };
 const profile = async (req, res) => {
   try {
-    console.log("hello");
     const { token } = req.cookies;
     if (!token) return res.status(404).json(null);
     let {
       data: { id },
     } = await promisify(jwt.verify)(token, process.env.SECRET_KEY);
     const user = await User.findById(id);
-    console.log(user);
     res.status(200).json(user);
   } catch (error) {
     console.log("profile", error);
