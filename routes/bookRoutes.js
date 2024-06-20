@@ -14,6 +14,7 @@ const {
   removeFavoriteBook,
   getAllCategory
 } = require("../controllers/bookController");
+const { auth } = require("../controllers/authController");
 // Define multer storage configuration
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -71,7 +72,7 @@ router.delete("/:id", deleteBook);
 //getSingle Book
 router.get("/single/:id", getSingleBook);
 //addFavoriteBook
-router.post('/addFavoriteBook/:userId/:bookId', addFavoriteBook);
+router.post('/addFavoriteBook/:userId/:bookId',auth, addFavoriteBook);
 //removeFavoriteBook
 router.post('/removeFavoriteBook/:userId/:bookId', removeFavoriteBook);
 module.exports = router;

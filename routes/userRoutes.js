@@ -76,5 +76,5 @@ router.post("/follow/:userId/:followUserId", followUser);
 //unfollow user
 router.post("/unfollow/:userId/:unfollowUserId", unfollowUser);
 
-router.get("/profile", profile);
+router.get("/profile",authController.auth, profile);
 module.exports = router;
