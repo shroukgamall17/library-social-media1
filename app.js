@@ -38,6 +38,7 @@ app.use("/comment", commentRoute);
 app.use("/notification", notificationRoutes);
 app.use("/image", express.static("bookImage"));
 app.use("/image", express.static("userImages"));
+app.use("/postcard", express.static("postImages"));
 // app.use("/books", bookRoutes);
 
 app.listen(process.env.PORT, () =>
