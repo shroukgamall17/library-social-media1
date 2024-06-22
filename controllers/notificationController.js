@@ -1,6 +1,13 @@
 const Notification = require("../models/notificationModel");
 const User = require("../models/userModel");
 
+
+let io;
+
+const initializeSocket = (socketIO) => {
+  io = socketIO;
+};
+
 // const getNotificationsForUser = async (req, res) => {
 //   try {
 //     const limit = parseInt(req.query.limit) || 10;
@@ -66,6 +73,10 @@ const createNotification = async (senderId, receiverId, type, message) => {
 
     await notification.save();
 
+    if (io) {
+      io.to(receiverId).emit("newNotification", notification);
+    }
+
     await User.findByIdAndUpdate(receiverId, {
       $push: { notifications: notification._id },
     });
@@ -98,6 +109,7 @@ const deleteNotificationForUser = async (req, res) => {
 
 
 module.exports = {
+  initializeSocket,
   getNotificationsForUser,
   markNotificationsAsRead,
   createNotification,

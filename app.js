@@ -12,7 +12,7 @@ const dotenv = require("dotenv").config();
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const Notification = require("./models/notificationModel");
-
+const notificationController =require('./controllers/notificationController')
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
@@ -34,12 +34,20 @@ const io = require("socket.io")(server, {
   },
 });
 
+
+// Initialize socket in the notification controller
+notificationController.initializeSocket(io);
+
 io.on("connection", (socket) => {
+  console.log("User connected", socket.id);
+
   socket.on("join", (userId) => {
+    console.log(`User ${socket.id} joining room: ${userId}`);
     socket.join(userId);
   });
 
   socket.on("leave", (userId) => {
+    console.log(`User ${socket.id} leaving room: ${userId}`);
     socket.leave(userId);
   });
 
@@ -48,25 +56,19 @@ io.on("connection", (socket) => {
   });
 });
 
-// Test notification (for demonstration purposes, remove in production)
-setTimeout(() => {
-  sendNotification("userId123", "This is a new notification!");
-}, 5000);
 
-const sendNotification = (userId, notification) => {
-  io.to(userId).emit("newNotification", notification);
-};
 
+
+// Endpoint to send notification (for testing)
 app.post("/send-notification", async (req, res) => {
   const { userId, message, details } = req.body;
   const notification = new Notification({ user: userId, message, details });
 
   try {
     await notification.save();
-    sendNotification(userId, notification);
+    notificationController.createNotification(null, userId, 'info', message);
     res.status(201).json(notification);
   } catch (error) {
-    console.error("Failed to save notification:", error);
     res.status(500).json({ message: "Failed to save notification" });
   }
 });
@@ -81,7 +83,7 @@ mongoose
 
 app.use("/users", userRoutes);
 app.use("/posts", postRoute);
-app.use("/comments", commentRoute); // Fixed the duplicate route for comments
+app.use("/comments", commentRoute); 
 app.use("/books", bookRoutes);
 app.use("/ratings", ratingRoutes);
 app.use("/authors", authorRoutes);
@@ -89,6 +91,7 @@ app.use("/notifications", notificationRoutes);
 app.use("/image", express.static("bookImage"));
 app.use("/image", express.static("userImages"));
 app.use("/postcard", express.static("postImages"));
+// app.use("/books", bookRoutes);
 
 
 server.listen(process.env.PORT, () => console.log(`App listening on port ${process.env.PORT}!`));
