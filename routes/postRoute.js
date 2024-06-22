@@ -4,7 +4,6 @@ const fs = require("fs");
 const router = express.Router();
 const authController = require("../controllers/authController.js");
 const postController = require("../controllers/postController");
-const { auth, restrictTo } = require("../middlewares/auth.js");
 const multer = require("multer");
 
 const storage = multer.diskStorage({
@@ -23,15 +22,54 @@ router.post(
   "/",
   upload.single("image"),
   authController.auth,
+  //authController.restrictTo("admin", "user"),
   postController.createPost
 );
-router.get("/", postController.getAllPosts);
-router.get("/:id", postController.getUserPosts);
-router.get("/single/:id", postController.getPostById);
-router.delete("/:id", postController.deletePost);
-router.patch("/:id", upload.single("photo"), postController.updatePost);
-router.post("/like/:userId/:postId", postController.likePost);
-router.post("/dislike/:userId/:postId", postController.dislikePost);
-router.post("/save/:userId/:postId", postController.savePost);
-router.post("/unsave/:userId/:postId", postController.unSavePost);
+router.get(
+  "/",
+  //authController.auth,
+  //authController.restrictTo("admin", "user"),
+  postController.getAllPosts
+);
+router.get(
+  "/single/:id",
+  //authController.auth,
+  postController.getPostById
+);
+router.delete(
+  "/:id",
+  // authController.auth,
+  postController.deletePost
+);
+router.patch(
+  "/:id",
+  //authController.auth,
+  //authController.restrictTo("admin", "user"),
+  upload.single("photo"),
+  postController.updatePost
+);
+router.post(
+  "/like/:userId/:postId",
+  // authController.auth,
+  //authController.restrictTo("admin", "user"),
+  postController.likePost
+);
+router.post(
+  "/dislike/:userId/:postId",
+  //authController.auth,
+  //authController.restrictTo("admin", "user"),
+  postController.dislikePost
+);
+router.post(
+  "/save/:userId/:postId",
+  //authController.auth,
+  //authController.restrictTo("admin", "user"),
+  postController.savePost
+);
+router.post(
+  "/unsave/:userId/:postId",
+  //authController.auth,
+  //authController.restrictTo("admin", "user"),
+  postController.unSavePost
+);
 module.exports = router;

@@ -50,31 +50,77 @@ router.post("/forgotPassword", authController.forgotPassword);
 router.post("/resetPassword/:token", authController.resetPassword);
 
 //update password
-router.post("/updatePassword", authController.updatePassword);
+router.post(
+  "/updatePassword",
+  // authController.auth,
+  authController.updatePassword
+);
 
 // get single user
-// router.get("/single/:id", getSingleUser);
-router.route("/:id").get(getSingleUser).delete(deleteUser).patch(updateUser);
+router.get("/single/:id", authController.auth, getSingleUser);
+
+//update user & delete user
+router
+  .route("/:id")
+  .delete(authController.auth, authController.restrictTo("admin"), deleteUser)
+  .patch(
+    authController.auth,
+    authController.restrictTo("admin", "user"),
+    updateUser
+  );
 //get All Users
-router.get("/", getAllUsers);
-//delete user
+router.get(
+  "/",
+  //authController.auth,
+  getAllUsers
+);
 // router.delete("/:id", deleteUser);
-// //update user
 // router.patch("/:id", updateUser);
 //search by name
-router.get("/search", searchByName);
+router.get("/search", authController.auth, searchByName);
 //up to admin
-router.patch("/up/:userId", upToAdmin);
+router.patch(
+  "/up/:userId",
+  authController.auth,
+  authController.restrictTo("admin"),
+  upToAdmin
+);
 ///down to user
-router.patch("/down/:userId", downToUser);
+router.patch(
+  "/down/:userId",
+  authController.auth,
+  authController.restrictTo("admin"),
+  downToUser
+);
 //get all users
-router.get("/user", filterWithUser);
+router.get(
+  "/user",
+  authController.auth,
+  authController.restrictTo("admin"),
+  filterWithUser
+);
 ///update docImg us.er
-router.patch("/photo/:id", upload.single("photo"), updateUserPhoto);
+router.patch(
+  "/photo/:id",
+  upload.single("photo"),
+  // authController.auth,
+  // authController.restrictTo("admin", "user"),
+  updateUserPhoto
+);
 //follow user
-router.post("/follow/:userId/:followUserId", followUser);
+router.post(
+  "/follow/:userId/:followUserId",
+  // authController.auth,
+  // authController.restrictTo("admin", "user"),
+  followUser
+);
 //unfollow user
-router.post("/unfollow/:userId/:unfollowUserId", unfollowUser);
+router.post(
+  "/unfollow/:userId/:unfollowUserId",
+  // authController.auth,
+  // authController.restrictTo("admin", "user"),
+  unfollowUser
+);
 
-router.get("/profile", profile);
+router.get("/profile", authController.auth, profile);
 module.exports = router;
