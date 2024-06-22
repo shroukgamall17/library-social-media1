@@ -153,8 +153,9 @@ exports.dislikePost = async (req, res) => {
   try {
     const post = await Post.findById(req.params.postId);
     if (!post) return res.status(404).json({ message: "Post not found" });
-
-    post.likes = post.likes.filter((userId) => userId !== req.params.userId);
+    post.likes = post.likes.filter((userId) => {
+      return userId.toString() !== req.params.userId;
+    });
     await post.save();
     res.status(200).json({ message: "Post disliked" });
   } catch (error) {
