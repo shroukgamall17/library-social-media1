@@ -295,7 +295,7 @@ const profile = async (req, res) => {
     let {
       data: { id },
     } = await promisify(jwt.verify)(token, process.env.SECRET_KEY);
-    const user = await User.findById(id).populate("favouriteBooks")
+    const user = await User.findById(id).populate('favouriteBooks');
     console.log(user);
     res.status(200).json(user);
   } catch (error) {
