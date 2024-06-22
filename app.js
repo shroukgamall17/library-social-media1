@@ -81,14 +81,15 @@ mongoose
 
 app.use("/users", userRoutes);
 app.use("/posts", postRoute);
-app.use("/comments", commentRoute); // Fixed the duplicate route for comments
+app.use("/comments", commentRoute); 
 app.use("/books", bookRoutes);
 app.use("/ratings", ratingRoutes);
 app.use("/authors", authorRoutes);
 app.use("/notifications", notificationRoutes);
-app.use("/images/books", express.static("bookImage"));
-app.use("/images/users", express.static("userImages"));
+app.use("/image", express.static("bookImage"));
+app.use("/image", express.static("userImages"));
 app.use("/postcard", express.static("postImages"));
+// app.use("/books", bookRoutes);
 
 
 server.listen(process.env.PORT, () => console.log(`App listening on port ${process.env.PORT}!`));
