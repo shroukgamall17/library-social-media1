@@ -88,6 +88,7 @@ app.use("/authors", authorRoutes);
 app.use("/notifications", notificationRoutes);
 app.use("/images/books", express.static("bookImage"));
 app.use("/images/users", express.static("userImages"));
+app.use("/postcard", express.static("postImages"));
 
 
 server.listen(process.env.PORT, () => console.log(`App listening on port ${process.env.PORT}!`));
