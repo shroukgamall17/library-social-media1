@@ -4,7 +4,6 @@ const path = require("path");
 const fs = require("fs");
 const {
   getAllUsers,
-
   deleteUser,
   getSingleUser,
   updateUser,
@@ -53,6 +52,7 @@ router.post("/resetPassword/:token", authController.resetPassword);
 router.post("/updatePassword", authController.updatePassword);
 
 // get single user
+
 router.get("/single/:id", getSingleUser);
 router.route(":id").delete(deleteUser).patch(updateUser);
 //get All Users
@@ -76,5 +76,5 @@ router.post("/follow/:userId/:followUserId", followUser);
 //unfollow user
 router.post("/unfollow/:userId/:unfollowUserId", unfollowUser);
 
-router.get("/profile", profile);
+router.get("/profile", authController.auth, profile);
 module.exports = router;

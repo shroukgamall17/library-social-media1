@@ -23,6 +23,8 @@ const getAllUsers = async (req, res) => {
   }
 };
 
+
+
 // const registerNewUser = async (req, res) => {
 //   try {
 //     const files = req.file;
@@ -105,7 +107,7 @@ const getSingleUser = async (req, res) => {
     const singleUser = await User.findById(id).select([
       "-password",
       "-confirmPassword",
-    ]);
+    ]).populate("favouriteBooks")
     res.json(singleUser);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -293,7 +295,7 @@ const profile = async (req, res) => {
     let {
       data: { id },
     } = await promisify(jwt.verify)(token, process.env.SECRET_KEY);
-    const user = await User.findById(id);
+    const user = await User.findById(id).populate("favouriteBooks")
     console.log(user);
     res.status(200).json(user);
   } catch (error) {
@@ -303,6 +305,7 @@ const profile = async (req, res) => {
 };
 module.exports = {
   getAllUsers,
+ 
   getSingleUser,
   deleteUser,
   updateUser,
