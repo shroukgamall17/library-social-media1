@@ -24,4 +24,4 @@ function restrictTo(...roles) {
     next();
   };
 }
-module.exports = { auth, restrictTo };
+//module.exports = { auth, restrictTo };
