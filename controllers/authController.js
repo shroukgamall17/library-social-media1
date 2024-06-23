@@ -28,7 +28,7 @@ exports.signup = async (req, res) => {
     });
     const token = jwt.sign(
       {
-        data: { email: newUser.email, id: newUser._id, name: newUser.name },
+        data: { email: newUser.email, id: newUser._id, name: newUser.name,role:newUser.role },
       },
       process.env.SECRET_KEY
     );
@@ -53,7 +53,7 @@ exports.login = async (req, res) => {
     }
     const token = jwt.sign(
       {
-        data: { email: user.email, id: user._id, name: user.name },
+        data: { email: user.email, id: user._id, name: user.name,role:user.role },
       },
       process.env.SECRET_KEY
     );
@@ -149,16 +149,21 @@ exports.auth = async (req, res, next) => {
   try {
     const { token } = req.cookies;
     if (!token) return res.status(404).json({ message: "please login" });
-    let { data } = await promisify(jwt.verify)(token, process.env.SECRET_KEY);
+    let {data}  = await promisify(jwt.verify)(token, process.env.SECRET_KEY);
     req.user = { ...data };
+    req.role = data.role;
+    console.log(req.user)
+    console.log(req.role)
+    console.log('*')
     next();
   } catch (error) {
     res.status(400).json({ error });
   }
 };
-exports.restrictTo =
-  (...roles) =>
+exports.restrictTo = (...roles) =>
   (req, res, next) => {
+    console.log(roles)
+    console.log(req.role)
     if (!roles.includes(req.role)) {
       return res
         .status(401)

@@ -151,8 +151,11 @@ exports.likePost = async (req, res) => {
       console.log("Sender ID:", req.params.userId);
       console.log("Receiver ID (Post Owner):", post.userId);
 
-      await createNotification(req.params.userId, post.userId, 'like', `${user.name} liked your post`);
+     // await createNotification(req.params.userId, post.userId, 'like', `${user.name} liked your post`);
 
+     if (req.params.userId !== post.userId.toString()) {
+      await createNotification(req.params.userId, post.userId, 'like', `${user.name} liked your post`);
+    }
       res.status(200).json({ message: "Post liked" });
     } else {
       res.status(400).json({ message: "User already liked this post" });
@@ -163,18 +166,46 @@ exports.likePost = async (req, res) => {
 };
 
 // dislike a post
+// exports.dislikePost = async (req, res) => {
+//   try {
+//     const post = await Post.findById(req.params.postId);
+//     if (!post) return res.status(404).json({ message: "Post not found" });
+
+//     post.likes = post.likes.filter((userId) => userId !== req.params.userId);
+//     await post.save();
+//     res.status(200).json({ message: "Post disliked" });
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
+
 exports.dislikePost = async (req, res) => {
   try {
-    const post = await Post.findById(req.params.postId);
-    if (!post) return res.status(404).json({ message: "Post not found" });
+    const { postId, userId } = req.params;
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
 
-    post.likes = post.likes.filter((userId) => userId !== req.params.userId);
+    // Check if the user has already disliked the post
+    if (!post.likes.includes(userId)) {
+      return res.status(400).json({ message: "User has not liked this post" });
+    }
+
+    // Filter out the user ID from the likes array
+    post.likes = post.likes.filter((id) => id.toString() !== userId);
+
+    // Save the updated post
     await post.save();
-    res.status(200).json({ message: "Post disliked" });
+
+    // Respond with a success message
+    res.status(200).json({ message: "Post disliked successfully" });
   } catch (error) {
+    // Handle any errors that occur
     res.status(500).json({ message: error.message });
   }
 };
+
 
 exports.savePost = async (req, res) => {
   try {
@@ -203,8 +234,10 @@ exports.savePost = async (req, res) => {
     }
     const savingUser = await User.findById(userId);
     if (!savingUser) return res.status(404).json({ message: "User not found" });
+   // await createNotification(userId, post.userId, 'save', `${savingUser.name} saved your post`);
+   if (userId !== post.userId.toString()) {
     await createNotification(userId, post.userId, 'save', `${savingUser.name} saved your post`);
-
+  }
     res
       .status(200)
       .json({ message: "Post added to user's posts.", data: user });
