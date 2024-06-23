@@ -223,6 +223,10 @@ const followUser = async (req, res) => {
   try {
     const { userId, followUserId } = req.params;
 
+     // Check if user is trying to follow themselves
+     if (userId === followUserId) {
+      return res.status(400).json({ message: "You cannot follow yourself" });
+    }
     // Find the user who is being followed
     const followUser = await User.findById(followUserId);
     if (!followUser) {

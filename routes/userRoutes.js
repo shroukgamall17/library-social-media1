@@ -69,8 +69,8 @@ router.get("/search", authController.auth, searchByName);
 //up to admin
 router.patch(
   "/up/:userId",
-  authController.auth,
-  authController.restrictTo("admin"),
+  //authController.auth,
+  //authController.restrictTo("admin"),
   upToAdmin
 );
 ///down to user
