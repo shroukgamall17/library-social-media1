@@ -291,12 +291,13 @@ const unfollowUser = async (req, res) => {
 };
 const profile = async (req, res) => {
   try {
-    const { token } = req.cookies;
-    if (!token) return res.status(404).json(null);
-    let {
-      data: { id },
-    } = await promisify(jwt.verify)(token, process.env.SECRET_KEY);
-    const user = await User.findById(id).populate("favouriteBooks");
+    console.log("profile");
+    // const { token } = req.cookies;
+    // if (!token) return res.status(404).json(null);
+    // let {
+    //   data: { id },
+    // } = await promisify(jwt.verify)(token, process.env.SECRET_KEY);
+    const user = await User.findById(req.user.id).populate("favouriteBooks");
     console.log(user);
     res.status(200).json(user);
   } catch (error) {

@@ -56,18 +56,6 @@ router.post(
   authController.updatePassword
 );
 
-// get single user
-router.get("/single/:id", authController.auth, getSingleUser);
-
-//update user & delete user
-router
-  .route("/:id")
-  .delete(authController.auth, authController.restrictTo("admin"), deleteUser)
-  .patch(
-    authController.auth,
-    authController.restrictTo("admin", "user"),
-    updateUser
-  );
 //get All Users
 router.get(
   "/",
@@ -121,6 +109,17 @@ router.post(
   // authController.restrictTo("admin", "user"),
   unfollowUser
 );
-
 router.get("/profile", authController.auth, profile);
+// get single user
+router.get("/:id", authController.auth, getSingleUser);
+
+//update user & delete user
+router
+  .route("/:id")
+  .delete(authController.auth, authController.restrictTo("admin"), deleteUser)
+  .patch(
+    authController.auth,
+    authController.restrictTo("admin", "user"),
+    updateUser
+  );
 module.exports = router;
