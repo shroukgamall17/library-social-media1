@@ -248,7 +248,7 @@ const followUser = async (req, res) => {
     // Add the follower to the followed user's followers list
     followUser.followers.push(userId);
     await followUser.save();
-    await createNotification(userId, followUserId, 'follow', 'Someone followed you');
+    await createNotification(userId, followUserId, 'follow', `${user.name} followed you`);
     res.status(200).json({ message: "Followed user successfully" });
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });
@@ -293,7 +293,7 @@ const profile = async (req, res) => {
     let {
       data: { id },
     } = await promisify(jwt.verify)(token, process.env.SECRET_KEY);
-    const user = await User.findById(id);
+    const user = await User.findById(id).populate(["favouriteBooks",'savedPosts']);
     console.log(user);
     res.status(200).json(user);
   } catch (error) {
