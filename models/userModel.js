@@ -13,6 +13,7 @@ const userSchema = new mongoose.Schema(
     },
     password: { type: String, required: true, select: false },
     photo: { type: String },
+    posts:[{type:mongoose.SchemaTypes.ObjectId,ref:'Post'}],
     savedPosts: [{ type: mongoose.Schema.Types.ObjectId, ref: "Post" }],
     favouriteBooks: [{ type: mongoose.Schema.Types.ObjectId, ref: "Book" }],
     followers: [{ type: mongoose.SchemaTypes.ObjectId, ref: "User" }],

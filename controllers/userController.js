@@ -11,7 +11,7 @@ const { createNotification } = require("./notificationController");
 const getAllUsers = async (req, res) => {
   try {
     const users = await User.find({})
-      .populate("favouriteBooks")
+      .populate(["favouriteBooks","posts"])
       .sort({ createdAt: -1 })
       .select(["-password", "-confirmPassword"]);
     res.status(201).json({
@@ -105,8 +105,8 @@ const getSingleUser = async (req, res) => {
     const singleUser = await User.findById(id).select([
       "-password",
       "-confirmPassword",
-    ]);
-    res.json(singleUser);
+    ]).populate(['favouriteBooks','savedPosts','posts']);
+    res.status(200).json(singleUser);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -297,7 +297,7 @@ const profile = async (req, res) => {
     let {
       data: { id },
     } = await promisify(jwt.verify)(token, process.env.SECRET_KEY);
-    const user = await User.findById(id).populate(['favouriteBooks','savedPosts']);
+    const user = await User.findById(id).populate(['favouriteBooks','savedPosts','posts']);
     console.log(user);
     res.status(200).json(user);
   } catch (error) {
