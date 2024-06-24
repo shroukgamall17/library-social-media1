@@ -101,10 +101,9 @@ const getSingleUser = async (req, res) => {
     const { id } = req.params;
 
     // console.log(req.params);
-    const singleUser = await User.findById(id).select([
-      "-password",
-      "-confirmPassword",
-    ]);
+    const singleUser = await User.findById(id)
+      .select(["-password", "-confirmPassword"])
+      .populate(["followers", "following"]);
     res.json(singleUser);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -223,8 +222,8 @@ const followUser = async (req, res) => {
   try {
     const { userId, followUserId } = req.params;
 
-     // Check if user is trying to follow themselves
-     if (userId === followUserId) {
+    // Check if user is trying to follow themselves
+    if (userId === followUserId) {
       return res.status(400).json({ message: "You cannot follow yourself" });
     }
     // Find the user who is being followed
@@ -301,7 +300,11 @@ const profile = async (req, res) => {
     // let {
     //   data: { id },
     // } = await promisify(jwt.verify)(token, process.env.SECRET_KEY);
-    const user = await User.findById(req.user.id).populate("favouriteBooks");
+    const user = await User.findById(req.user.id).populate([
+      "favouriteBooks",
+      "followers",
+      "following",
+    ]);
     console.log(user);
     res.status(200).json(user);
   } catch (error) {
