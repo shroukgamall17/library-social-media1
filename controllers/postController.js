@@ -2,14 +2,70 @@ const Post = require("../models/postModel");
 const User = require("../models/userModel");
 const { createNotification } = require("./notificationController");
 //Create a new post
-exports.createPost = async (req, res) => {
-  const { description, type } = req.body;
+// exports.createPost = async (req, res) => {
+//   const { description, type } = req.body;
 
+//   const imageURL = req.file ? req.file.filename : "";
+
+//   const { book, rating } = req.body;
+
+//   try {
+//     const newPostData = {
+//       userId: req.user.id,
+//       type,
+//       imageURL,
+//       description,
+//     };
+
+//     if (book) {
+//       newPostData.book = book;
+//     }
+
+//     if (rating) {
+//       newPostData.rating = rating;
+//     }
+
+//     const newPost = new Post(newPostData);
+
+//     const savedPost = await newPost.save();
+
+//     const postingUser = await User.findById(req.user.id).select('name followers');
+//     //const userFollowers = await User.findById(req.user.id).select('followers');
+//     const userName = postingUser.name;
+//     const followersIds = postingUser.followers;
+
+//     for (const followerId of followersIds) {
+//       try {
+//         await createNotification(req.user.id, followerId, 'new_post', `${userName} has posted a new post`);
+//         console.log(`Notification sent to followerId: ${followerId}`);
+//       } catch (notificationError) {
+//         console.error(`Failed to send notification to followerId: ${followerId}`, notificationError);
+//       }
+//     }
+
+//     // const notifications = followersIds.map(followerId =>
+//     //   createNotification(req.user.id, followerId, 'new_post', 'A user you follow has posted a new post')
+//     // );
+//     // await Promise.all(notifications);
+
+//     res.status(201).json(savedPost);
+//   } catch (error) {
+//     res.status(400).json({ message: error.message });
+//   }
+// };
+
+exports.createPost = async (req, res) => {
+  const { description, type, book, rating } = req.body;
   const imageURL = req.file ? req.file.filename : "";
 
-  const { book, rating } = req.body;
-
   try {
+    // Debugging: Log the user information
+    console.log("Authenticated user:", req.user);
+
+    // Ensure req.user.id is available
+    if (!req.user || !req.user.id) {
+      return res.status(400).json({ message: "User not authenticated" });
+    }
     const newPostData = {
       userId: req.user.id,
       type,
@@ -26,13 +82,15 @@ exports.createPost = async (req, res) => {
     }
 
     const newPost = new Post(newPostData);
-
     const savedPost = await newPost.save();
 
+    // Add the post ID to the user's posts array
     const postingUser = await User.findById(req.user.id).select(
-      "name followers"
+      "name followers posts"
     );
-    //const userFollowers = await User.findById(req.user.id).select('followers');
+    postingUser.posts.push(savedPost._id);
+    await postingUser.save();
+
     const userName = postingUser.name;
     const followersIds = postingUser.followers;
 
@@ -52,11 +110,6 @@ exports.createPost = async (req, res) => {
         );
       }
     }
-
-    // const notifications = followersIds.map(followerId =>
-    //   createNotification(req.user.id, followerId, 'new_post', 'A user you follow has posted a new post')
-    // );
-    // await Promise.all(notifications);
 
     res.status(201).json(savedPost);
   } catch (error) {

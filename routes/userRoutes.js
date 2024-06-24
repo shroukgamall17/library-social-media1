@@ -56,6 +56,21 @@ router.post(
   authController.updatePassword
 );
 
+// get single user
+router.get("/single/:id", authController.auth, getSingleUser);
+
+//update user
+router.patch("/:id", updateUser);
+// delete user
+router.patch("/:id", deleteUser);
+// router
+//   .route(":id")
+//   .delete(authController.auth, authController.restrictTo("admin"), deleteUser)
+//   .patch(
+//     authController.auth,
+//     authController.restrictTo("admin", "user"),
+//     updateUser
+//   );
 //get All Users
 router.get(
   "/",
