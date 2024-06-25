@@ -282,13 +282,16 @@ const unfollowUser = async (req, res) => {
     if (!user || !unfollowUser) {
       return res.status(404).send("User not found.");
     }
-
+    console.log("before", user.following);
+    console.log("before", unfollowUser.followers);
     user.following = user.following.filter(
       (id) => id.toString() !== unfollowUserId
     );
     unfollowUser.followers = unfollowUser.followers.filter(
       (id) => id.toString() !== userId
     );
+    console.log("after", user.following);
+    console.log("after", unfollowUser.followers);
 
     await user.save();
     await unfollowUser.save();
@@ -309,8 +312,9 @@ const profile = async (req, res) => {
     const user = await User.findById(id).populate([
       "favouriteBooks",
       "savedPosts",
+      "following",
+      "followers",
     ]);
-    console.log(user);
     res.status(200).json(user);
   } catch (error) {
     console.log("profile", error);

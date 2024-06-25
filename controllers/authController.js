@@ -162,8 +162,6 @@ exports.auth = async (req, res, next) => {
     let { data } = await promisify(jwt.verify)(token, process.env.SECRET_KEY);
     req.user = { ...data };
     req.user.role = data.role;
-    console.log(req.user);
-    console.log("*");
     next();
   } catch (error) {
     console.log(error);
@@ -173,9 +171,7 @@ exports.auth = async (req, res, next) => {
 exports.restrictTo =
   (...roles) =>
   (req, res, next) => {
-    console.log(roles);
-    console.log(req.role);
-    if (!roles.includes(req.role)) {
+    if (!roles.includes(req.user.role)) {
       return res
         .status(401)
         .json({ message: "You are not authorized to view this resource" });
