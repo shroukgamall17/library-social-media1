@@ -4,7 +4,6 @@ const path = require("path");
 const fs = require("fs");
 const {
   getAllUsers,
-
   deleteUser,
   getSingleUser,
   updateUser,

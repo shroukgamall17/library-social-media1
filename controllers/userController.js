@@ -23,6 +23,8 @@ const getAllUsers = async (req, res) => {
   }
 };
 
+
+
 // const registerNewUser = async (req, res) => {
 //   try {
 //     const files = req.file;
@@ -307,6 +309,7 @@ const profile = async (req, res) => {
 };
 module.exports = {
   getAllUsers,
+ 
   getSingleUser,
   deleteUser,
   updateUser,
