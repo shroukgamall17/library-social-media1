@@ -126,4 +126,18 @@ router.post(
 );
 
 router.get("/profile", authController.auth, profile);
+
+
+// login statistics
+router.get('/login-statistics', async (req, res) => {
+  try {
+    const statistics = await authController.getLoginStatistics();
+    res.status(200).json(statistics);
+  } catch (error) {
+    res.status(500).json({ msg: "Error retrieving login statistics", error });
+  }
+});
+
+module.exports = router;
+
 module.exports = router;

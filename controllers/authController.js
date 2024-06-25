@@ -51,11 +51,16 @@ exports.login = async (req, res) => {
     if (!isValid) {
       return res.status(400).json({ msg: "Invalid email or password" });
     }
+
+    user.loginTimestamps.push(new Date());
+    await user.save();
+
     const token = jwt.sign(
       {
         data: { email: user.email, id: user._id, name: user.name,role:user.role },
       },
-      process.env.SECRET_KEY
+      process.env.SECRET_KEY,
+      { expiresIn: '1h' }
     );
     res.cookie("token", token, { httpOnly: true }).status(200).json({ user });
   } catch (error) {
@@ -171,3 +176,32 @@ exports.restrictTo = (...roles) =>
     }
     next();
   };
+
+
+  exports.getLoginStatistics = async () => {
+    try {
+      const users = await User.find({}, 'loginTimestamps');
+  
+      const loginsPerDay = Array(7).fill(0);
+  
+      users.forEach(user => {
+        user.loginTimestamps.forEach(timestamp => {
+          const dayOfWeek = timestamp.getDay();
+          loginsPerDay[dayOfWeek]++;
+        });
+      });
+  
+      const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const loginStatistics = daysOfWeek.map((day, index) => ({
+        day,
+        count: loginsPerDay[index]
+      }));
+  
+      return loginStatistics;
+    } catch (error) {
+      console.error("Error retrieving login statistics:", error);
+    }
+  };
+  
+ 
+  
