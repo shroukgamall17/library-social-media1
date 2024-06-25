@@ -35,7 +35,8 @@ exports.signup = async (req, res) => {
           role: newUser.role,
         },
       },
-      process.env.SECRET_KEY
+      process.env.SECRET_KEY,
+      { expiresIn: "10h" }
     );
     res.cookie("token", token, { httpOnly: true }).status(201).json(newUser);
   } catch (error) {
@@ -65,7 +66,8 @@ exports.login = async (req, res) => {
           role: user.role,
         },
       },
-      process.env.SECRET_KEY
+      process.env.SECRET_KEY,
+      { expiresIn: "12h" }
     );
     res.cookie("token", token, { httpOnly: true }).status(200).json({ user });
   } catch (error) {
