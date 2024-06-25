@@ -204,4 +204,28 @@ exports.restrictTo = (...roles) =>
   };
   
  
+  exports.getRegistrationStatistics = async () => {
+    try {
+      const users = await User.find({}, 'createdAt');
+  
+      const registrationsPerDay = Array(7).fill(0);
+  
+      users.forEach(user => {
+        const dayOfWeek = user.createdAt.getDay();
+        registrationsPerDay[dayOfWeek]++;
+      });
+  
+      const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const registrationStatistics = daysOfWeek.map((day, index) => ({
+        day,
+        count: registrationsPerDay[index]
+      }));
+  
+      return registrationStatistics;
+    } catch (error) {
+      console.error("Error retrieving registration statistics:", error);
+    }
+  };
+  
+
   

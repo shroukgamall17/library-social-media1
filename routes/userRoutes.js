@@ -62,7 +62,7 @@ router.get("/single/:id", authController.auth, getSingleUser);
 //update user 
 router.patch('/:id',updateUser)
 // delete user
-router.patch('/:id',deleteUser)
+router.delete('/:id',deleteUser)
 // router
 //   .route(":id")
 //   .delete(authController.auth, authController.restrictTo("admin"), deleteUser)
@@ -138,6 +138,18 @@ router.get('/login-statistics', async (req, res) => {
   }
 });
 
+
+// register statistics
+router.get('/registration-statistics', async (req, res) => {
+  try {
+    const statistics = await authController.getRegistrationStatistics();
+    res.status(200).json(statistics);
+  } catch (error) {
+    res.status(500).json({ msg: "Error retrieving registration statistics", error });
+  }
+});
+
 module.exports = router;
+
 
 module.exports = router;
