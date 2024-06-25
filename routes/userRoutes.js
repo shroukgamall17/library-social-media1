@@ -4,7 +4,6 @@ const path = require("path");
 const fs = require("fs");
 const {
   getAllUsers,
-
   deleteUser,
   getSingleUser,
   updateUser,
@@ -121,6 +120,7 @@ router.post(
   unfollowUser
 );
 router.get("/profile", authController.auth, profile);
+
 // get single user
 router.get("/:id", authController.auth, getSingleUser);
 
@@ -133,4 +133,31 @@ router
     authController.restrictTo("admin", "user"),
     updateUser
   );
+
+
+
+// login statistics
+router.get('/login-statistics', async (req, res) => {
+  try {
+    const statistics = await authController.getLoginStatistics();
+    res.status(200).json(statistics);
+  } catch (error) {
+    res.status(500).json({ msg: "Error retrieving login statistics", error });
+  }
+});
+
+
+// register statistics
+router.get('/registration-statistics', async (req, res) => {
+  try {
+    const statistics = await authController.getRegistrationStatistics();
+    res.status(200).json(statistics);
+  } catch (error) {
+    res.status(500).json({ msg: "Error retrieving registration statistics", error });
+  }
+});
+
+module.exports = router;
+
+
 module.exports = router;
