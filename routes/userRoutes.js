@@ -58,10 +58,6 @@ router.post(
 // get single user
 router.get("/single/:id", authController.auth, getSingleUser);
 
-//update user 
-router.patch('/:id',updateUser)
-// delete user
-router.delete('/:id',deleteUser)
 // router
 //   .route(":id")
 //   .delete(authController.auth, authController.restrictTo("admin"), deleteUser)
@@ -123,8 +119,21 @@ router.post(
   // authController.restrictTo("admin", "user"),
   unfollowUser
 );
-
 router.get("/profile", authController.auth, profile);
+
+// get single user
+router.get("/:id", authController.auth, getSingleUser);
+
+//update user & delete user
+router
+  .route("/:id")
+  .delete(authController.auth, authController.restrictTo("admin"), deleteUser)
+  .patch(
+    authController.auth,
+    authController.restrictTo("admin", "user"),
+    updateUser
+  );
+
 
 
 // login statistics

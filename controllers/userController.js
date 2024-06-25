@@ -11,7 +11,7 @@ const { createNotification } = require("./notificationController");
 const getAllUsers = async (req, res) => {
   try {
     const users = await User.find({})
-      .populate(["favouriteBooks","posts"])
+      .populate(["favouriteBooks", "posts"])
       .sort({ createdAt: -1 })
       .select(["-password", "-confirmPassword"]);
     res.status(201).json({
@@ -100,15 +100,19 @@ const deleteUser = async (req, res) => {
 
 const getSingleUser = async (req, res) => {
   try {
-   
     const { id } = req.params;
-    
+
     // console.log(req.params);
-    const singleUser = await User.findById(id).select([
-      "-password",
-      "-confirmPassword",
-    ]).populate(['favouriteBooks','savedPosts','posts']);
-    res.status(200).json(singleUser);
+    const singleUser = await User.findById(id)
+      .select(["-password", "-confirmPassword"])
+      .populate([
+        "favouriteBooks",
+        "savedPosts",
+        "posts",
+        "followers",
+        "following",
+      ]);
+    res.json(singleUser);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -226,8 +230,8 @@ const followUser = async (req, res) => {
   try {
     const { userId, followUserId } = req.params;
 
-     // Check if user is trying to follow themselves
-     if (userId === followUserId) {
+    // Check if user is trying to follow themselves
+    if (userId === followUserId) {
       return res.status(400).json({ message: "You cannot follow yourself" });
     }
     // Find the user who is being followed
@@ -254,7 +258,12 @@ const followUser = async (req, res) => {
     // Add the follower to the followed user's followers list
     followUser.followers.push(userId);
     await followUser.save();
-    await createNotification(userId, followUserId, 'follow', `${user.name} followed you`);
+    await createNotification(
+      userId,
+      followUserId,
+      "follow",
+      `${user.name} followed you`
+    );
     res.status(200).json({ message: "Followed user successfully" });
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });
@@ -275,7 +284,6 @@ const unfollowUser = async (req, res) => {
     if (!user || !unfollowUser) {
       return res.status(404).send("User not found.");
     }
-
     user.following = user.following.filter(
       (id) => id.toString() !== unfollowUserId
     );
@@ -299,8 +307,12 @@ const profile = async (req, res) => {
     let {
       data: { id },
     } = await promisify(jwt.verify)(token, process.env.SECRET_KEY);
-    const user = await User.findById(id).populate(['favouriteBooks','savedPosts','posts']);
-    console.log(user);
+    const user = await User.findById(id).populate([
+      "favouriteBooks",
+      "savedPosts",
+      "following",
+      "followers",
+    ]);
     res.status(200).json(user);
   } catch (error) {
     console.log("profile", error);

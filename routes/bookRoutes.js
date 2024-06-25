@@ -12,7 +12,7 @@ const {
   searchByTitle,
   addFavoriteBook,
   removeFavoriteBook,
-  getAllCategory
+  getAllCategory,
 } = require("../controllers/bookController");
 const { auth } = require("../controllers/authController");
 // Define multer storage configuration
@@ -59,6 +59,13 @@ router.post(
   addBook
 );
 //Update book
+
+//getSingle Book
+router.get("/single/:id", getSingleBook);
+//addFavoriteBook
+router.post("/addFavoriteBook/:userId/:bookId", auth, addFavoriteBook);
+//removeFavoriteBook
+router.post("/removeFavoriteBook/:userId/:bookId", removeFavoriteBook);
 router.patch(
   "/:id",
   upload.fields([
@@ -69,10 +76,4 @@ router.patch(
 );
 //delete book
 router.delete("/:id", deleteBook);
-//getSingle Book
-router.get("/single/:id", getSingleBook);
-//addFavoriteBook
-router.post('/addFavoriteBook/:userId/:bookId',auth, addFavoriteBook);
-//removeFavoriteBook
-router.post('/removeFavoriteBook/:userId/:bookId', removeFavoriteBook);
 module.exports = router;

@@ -31,6 +31,7 @@ router.get(
   authController.restrictTo("admin", "user"),
   postController.getAllPosts
 );
+router.get("/:id", postController.getUserPosts);
 router.get(
   "/single/:id",
   //authController.auth,

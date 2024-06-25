@@ -28,9 +28,15 @@ exports.signup = async (req, res) => {
     });
     const token = jwt.sign(
       {
-        data: { email: newUser.email, id: newUser._id, name: newUser.name,role:newUser.role },
+        data: {
+          email: newUser.email,
+          id: newUser._id,
+          name: newUser.name,
+          role: newUser.role,
+        },
       },
-      process.env.SECRET_KEY
+      process.env.SECRET_KEY,
+      { expiresIn: "10h" }
     );
     res.cookie("token", token, { httpOnly: true }).status(201).json(newUser);
   } catch (error) {
@@ -57,10 +63,17 @@ exports.login = async (req, res) => {
 
     const token = jwt.sign(
       {
-        data: { email: user.email, id: user._id, name: user.name,role:user.role },
+        data: {
+          email: user.email,
+          id: user._id,
+          name: user.name,
+          role: user.role,
+        },
       },
       process.env.SECRET_KEY,
-      { expiresIn: '1h' }
+
+      { expiresIn: "12h" }
+
     );
     res.cookie("token", token, { httpOnly: true }).status(200).json({ user });
   } catch (error) {
@@ -154,22 +167,19 @@ exports.auth = async (req, res, next) => {
   try {
     const { token } = req.cookies;
     if (!token) return res.status(404).json({ message: "please login" });
-    let {data}  = await promisify(jwt.verify)(token, process.env.SECRET_KEY);
+    let { data } = await promisify(jwt.verify)(token, process.env.SECRET_KEY);
     req.user = { ...data };
-    req.role = data.role;
-    console.log(req.user)
-    console.log(req.role)
-    console.log('*')
+    req.user.role = data.role;
     next();
   } catch (error) {
+    console.log(error);
     res.status(400).json({ error });
   }
 };
-exports.restrictTo = (...roles) =>
+exports.restrictTo =
+  (...roles) =>
   (req, res, next) => {
-    console.log(roles)
-    console.log(req.role)
-    if (!roles.includes(req.role)) {
+    if (!roles.includes(req.user.role)) {
       return res
         .status(401)
         .json({ message: "You are not authorized to view this resource" });
