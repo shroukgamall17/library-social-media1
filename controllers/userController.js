@@ -11,7 +11,7 @@ const { createNotification } = require("./notificationController");
 const getAllUsers = async (req, res) => {
   try {
     const users = await User.find({})
-      .populate("favouriteBooks")
+      .populate(["favouriteBooks","posts"])
       .sort({ createdAt: -1 })
       .select(["-password", "-confirmPassword"]);
     res.status(201).json({
@@ -107,8 +107,8 @@ const getSingleUser = async (req, res) => {
     const singleUser = await User.findById(id).select([
       "-password",
       "-confirmPassword",
-    ]).populate("favouriteBooks")
-    res.json(singleUser);
+    ]).populate(['favouriteBooks','savedPosts','posts']);
+    res.status(200).json(singleUser);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -226,6 +226,10 @@ const followUser = async (req, res) => {
   try {
     const { userId, followUserId } = req.params;
 
+     // Check if user is trying to follow themselves
+     if (userId === followUserId) {
+      return res.status(400).json({ message: "You cannot follow yourself" });
+    }
     // Find the user who is being followed
     const followUser = await User.findById(followUserId);
     if (!followUser) {
@@ -295,7 +299,7 @@ const profile = async (req, res) => {
     let {
       data: { id },
     } = await promisify(jwt.verify)(token, process.env.SECRET_KEY);
-    const user = await User.findById(id).populate(['favouriteBooks','savedPosts']);
+    const user = await User.findById(id).populate(['favouriteBooks','savedPosts','posts']);
     console.log(user);
     res.status(200).json(user);
   } catch (error) {

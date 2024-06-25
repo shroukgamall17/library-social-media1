@@ -2,14 +2,70 @@ const Post = require("../models/postModel");
 const User = require("../models/userModel");
 const { createNotification } = require("./notificationController");
 //Create a new post
-exports.createPost = async (req, res) => {
-  const { description, type } = req.body;
+// exports.createPost = async (req, res) => {
+//   const { description, type } = req.body;
 
+//   const imageURL = req.file ? req.file.filename : "";
+
+//   const { book, rating } = req.body;
+
+//   try {
+//     const newPostData = {
+//       userId: req.user.id,
+//       type,
+//       imageURL,
+//       description,
+//     };
+
+//     if (book) {
+//       newPostData.book = book;
+//     }
+
+//     if (rating) {
+//       newPostData.rating = rating;
+//     }
+
+//     const newPost = new Post(newPostData);
+
+//     const savedPost = await newPost.save();
+
+//     const postingUser = await User.findById(req.user.id).select('name followers');
+//     //const userFollowers = await User.findById(req.user.id).select('followers');
+//     const userName = postingUser.name;
+//     const followersIds = postingUser.followers;
+
+//     for (const followerId of followersIds) {
+//       try {
+//         await createNotification(req.user.id, followerId, 'new_post', `${userName} has posted a new post`);
+//         console.log(`Notification sent to followerId: ${followerId}`);
+//       } catch (notificationError) {
+//         console.error(`Failed to send notification to followerId: ${followerId}`, notificationError);
+//       }
+//     }
+
+//     // const notifications = followersIds.map(followerId =>
+//     //   createNotification(req.user.id, followerId, 'new_post', 'A user you follow has posted a new post')
+//     // );
+//     // await Promise.all(notifications);
+
+//     res.status(201).json(savedPost);
+//   } catch (error) {
+//     res.status(400).json({ message: error.message });
+//   }
+// };
+
+exports.createPost = async (req, res) => {
+  const { description, type, book, rating } = req.body;
   const imageURL = req.file ? req.file.filename : "";
 
-  const { book, rating } = req.body;
-
   try {
+    // Debugging: Log the user information
+    console.log("Authenticated user:", req.user);
+
+    // Ensure req.user.id is available
+    if (!req.user || !req.user.id) {
+      return res.status(400).json({ message: "User not authenticated" });
+    }
     const newPostData = {
       userId: req.user.id,
       type,
@@ -26,27 +82,34 @@ exports.createPost = async (req, res) => {
     }
 
     const newPost = new Post(newPostData);
-
     const savedPost = await newPost.save();
 
-    const postingUser = await User.findById(req.user.id).select('name followers');
-    //const userFollowers = await User.findById(req.user.id).select('followers');
+    // Add the post ID to the user's posts array
+    const postingUser = await User.findById(req.user.id).select(
+      "name followers posts"
+    );
+    postingUser.posts.push(savedPost._id);
+    await postingUser.save();
+
     const userName = postingUser.name;
     const followersIds = postingUser.followers;
 
     for (const followerId of followersIds) {
       try {
-        await createNotification(req.user.id, followerId, 'new_post', `${userName} has posted a new post`);
+        await createNotification(
+          req.user.id,
+          followerId,
+          "new_post",
+          `${userName} has posted a new post`
+        );
         console.log(`Notification sent to followerId: ${followerId}`);
       } catch (notificationError) {
-        console.error(`Failed to send notification to followerId: ${followerId}`, notificationError);
+        console.error(
+          `Failed to send notification to followerId: ${followerId}`,
+          notificationError
+        );
       }
     }
-
-    // const notifications = followersIds.map(followerId =>
-    //   createNotification(req.user.id, followerId, 'new_post', 'A user you follow has posted a new post')
-    // );
-    // await Promise.all(notifications);
 
     res.status(201).json(savedPost);
   } catch (error) {
@@ -145,14 +208,22 @@ exports.likePost = async (req, res) => {
       post.likes.push(req.params.userId);
       await post.save();
 
-       // Fetch the user's details
-       const user = await User.findById(req.params.userId);
-       if (!user) return res.status(404).json({ message: "User not found" });
+      // Fetch the user's details
+      const user = await User.findById(req.params.userId);
+      if (!user) return res.status(404).json({ message: "User not found" });
       console.log("Sender ID:", req.params.userId);
       console.log("Receiver ID (Post Owner):", post.userId);
 
-      await createNotification(req.params.userId, post.userId, 'like', `${user.name} liked your post`);
+      // await createNotification(req.params.userId, post.userId, 'like', `${user.name} liked your post`);
 
+      if (req.params.userId !== post.userId.toString()) {
+        await createNotification(
+          req.params.userId,
+          post.userId,
+          "like",
+          `${user.name} liked your post`
+        );
+      }
       res.status(200).json({ message: "Post liked" });
     } else {
       res.status(400).json({ message: "User already liked this post" });
@@ -163,15 +234,42 @@ exports.likePost = async (req, res) => {
 };
 
 // dislike a post
+// exports.dislikePost = async (req, res) => {
+//   try {
+//     const post = await Post.findById(req.params.postId);
+//     if (!post) return res.status(404).json({ message: "Post not found" });
+
+//     post.likes = post.likes.filter((userId) => userId !== req.params.userId);
+//     await post.save();
+//     res.status(200).json({ message: "Post disliked" });
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
+
 exports.dislikePost = async (req, res) => {
   try {
-    const post = await Post.findById(req.params.postId);
-    if (!post) return res.status(404).json({ message: "Post not found" });
+    const { postId, userId } = req.params;
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
 
-    post.likes = post.likes.filter((userId) => userId !== req.params.userId);
+    // Check if the user has already disliked the post
+    if (!post.likes.includes(userId)) {
+      return res.status(400).json({ message: "User has not liked this post" });
+    }
+
+    // Filter out the user ID from the likes array
+    post.likes = post.likes.filter((id) => id.toString() !== userId);
+
+    // Save the updated post
     await post.save();
-    res.status(200).json({ message: "Post disliked" });
+
+    // Respond with a success message
+    res.status(200).json({ message: "Post disliked successfully" });
   } catch (error) {
+    // Handle any errors that occur
     res.status(500).json({ message: error.message });
   }
 };
@@ -203,8 +301,15 @@ exports.savePost = async (req, res) => {
     }
     const savingUser = await User.findById(userId);
     if (!savingUser) return res.status(404).json({ message: "User not found" });
-    await createNotification(userId, post.userId, 'save', `${savingUser.name} saved your post`);
-
+    // await createNotification(userId, post.userId, 'save', `${savingUser.name} saved your post`);
+    if (userId !== post.userId.toString()) {
+      await createNotification(
+        userId,
+        post.userId,
+        "save",
+        `${savingUser.name} saved your post`
+      );
+    }
     res
       .status(200)
       .json({ message: "Post added to user's posts.", data: user });

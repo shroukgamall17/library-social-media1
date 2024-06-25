@@ -51,26 +51,31 @@ router.post("/resetPassword/:token", authController.resetPassword);
 //update password
 router.post(
   "/updatePassword",
- // authController.auth,
+  // authController.auth,
   authController.updatePassword
 );
 
 // get single user
 router.get("/single/:id", authController.auth, getSingleUser);
 
-//update user & delete user
-router
-  .route(":id")
-  .delete(authController.auth, authController.restrictTo("admin"), deleteUser)
-  .patch(
-    authController.auth,
-    authController.restrictTo("admin", "user"),
-    updateUser
-  );
+//update user 
+router.patch('/:id',updateUser)
+// delete user
+router.delete('/:id',deleteUser)
+// router
+//   .route(":id")
+//   .delete(authController.auth, authController.restrictTo("admin"), deleteUser)
+//   .patch(
+//     authController.auth,
+//     authController.restrictTo("admin", "user"),
+//     updateUser
+//   );
 //get All Users
-router.get("/",
+router.get(
+  "/",
   //authController.auth,
-   getAllUsers);
+  getAllUsers
+);
 // router.delete("/:id", deleteUser);
 // router.patch("/:id", updateUser);
 //search by name
@@ -78,8 +83,8 @@ router.get("/search", authController.auth, searchByName);
 //up to admin
 router.patch(
   "/up/:userId",
-  authController.auth,
-  authController.restrictTo("admin"),
+  //authController.auth,
+  //authController.restrictTo("admin"),
   upToAdmin
 );
 ///down to user
@@ -90,8 +95,12 @@ router.patch(
   downToUser
 );
 //get all users
-router.get("/user", authController.auth,
-  authController.restrictTo("admin"), filterWithUser);
+router.get(
+  "/user",
+  authController.auth,
+  authController.restrictTo("admin"),
+  filterWithUser
+);
 ///update docImg us.er
 router.patch(
   "/photo/:id",
@@ -116,4 +125,30 @@ router.post(
 );
 
 router.get("/profile", authController.auth, profile);
+
+
+// login statistics
+router.get('/login-statistics', async (req, res) => {
+  try {
+    const statistics = await authController.getLoginStatistics();
+    res.status(200).json(statistics);
+  } catch (error) {
+    res.status(500).json({ msg: "Error retrieving login statistics", error });
+  }
+});
+
+
+// register statistics
+router.get('/registration-statistics', async (req, res) => {
+  try {
+    const statistics = await authController.getRegistrationStatistics();
+    res.status(200).json(statistics);
+  } catch (error) {
+    res.status(500).json({ msg: "Error retrieving registration statistics", error });
+  }
+});
+
+module.exports = router;
+
+
 module.exports = router;
