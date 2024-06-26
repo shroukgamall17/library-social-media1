@@ -28,9 +28,15 @@ exports.signup = async (req, res) => {
     });
     const token = jwt.sign(
       {
-        data: { email: newUser.email, id: newUser._id, name: newUser.name,role:newUser.role },
+        data: {
+          email: newUser.email,
+          id: newUser._id,
+          name: newUser.name,
+          role: newUser.role,
+        },
       },
-      process.env.SECRET_KEY
+      process.env.SECRET_KEY,
+      { expiresIn: "10h" }
     );
     res.cookie("token", token, { httpOnly: true }).status(201).json(newUser);
   } catch (error) {
@@ -51,11 +57,23 @@ exports.login = async (req, res) => {
     if (!isValid) {
       return res.status(400).json({ msg: "Invalid email or password" });
     }
+
+    user.loginTimestamps.push(new Date());
+    await user.save();
+
     const token = jwt.sign(
       {
-        data: { email: user.email, id: user._id, name: user.name,role:user.role },
+        data: {
+          email: user.email,
+          id: user._id,
+          name: user.name,
+          role: user.role,
+        },
       },
-      process.env.SECRET_KEY
+      process.env.SECRET_KEY,
+
+      { expiresIn: "12h" }
+
     );
     res.cookie("token", token, { httpOnly: true }).status(200).json({ user });
   } catch (error) {
@@ -151,23 +169,73 @@ exports.auth = async (req, res, next) => {
     if (!token) return res.status(404).json({ message: "please login" });
     let {data}  = await promisify(jwt.verify)(token, process.env.SECRET_KEY);
     req.user = { ...data };
-    //req.user = data;
-    req.role = data.role;
-    console.log(req.user)
-    console.log(req.role)
-    console.log('***************')
+    req.user.role = data.role;
     next();
   } catch (error) {
+    console.log(error);
     res.status(400).json({ error });
   }
 };
 exports.restrictTo =
   (...roles) =>
   (req, res, next) => {
-    if (!roles.includes(req.role)) {
+    if (!roles.includes(req.user.role)) {
       return res
         .status(401)
         .json({ message: "You are not authorized to view this resource" });
     }
     next();
   };
+
+
+  exports.getLoginStatistics = async () => {
+    try {
+      const users = await User.find({}, 'loginTimestamps');
+  
+      const loginsPerDay = Array(7).fill(0);
+  
+      users.forEach(user => {
+        user.loginTimestamps.forEach(timestamp => {
+          const dayOfWeek = timestamp.getDay();
+          loginsPerDay[dayOfWeek]++;
+        });
+      });
+  
+      const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const loginStatistics = daysOfWeek.map((day, index) => ({
+        day,
+        count: loginsPerDay[index]
+      }));
+  
+      return loginStatistics;
+    } catch (error) {
+      console.error("Error retrieving login statistics:", error);
+    }
+  };
+  
+ 
+  exports.getRegistrationStatistics = async () => {
+    try {
+      const users = await User.find({}, 'createdAt');
+  
+      const registrationsPerDay = Array(7).fill(0);
+  
+      users.forEach(user => {
+        const dayOfWeek = user.createdAt.getDay();
+        registrationsPerDay[dayOfWeek]++;
+      });
+  
+      const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const registrationStatistics = daysOfWeek.map((day, index) => ({
+        day,
+        count: registrationsPerDay[index]
+      }));
+  
+      return registrationStatistics;
+    } catch (error) {
+      console.error("Error retrieving registration statistics:", error);
+    }
+  };
+  
+
+  

@@ -27,10 +27,11 @@ router.post(
 );
 router.get(
   "/",
-  //authController.auth,
-  //authController.restrictTo("admin", "user"),
+  authController.auth,
+  authController.restrictTo("admin", "user"),
   postController.getAllPosts
 );
+router.get("/:id", postController.getUserPosts);
 router.get(
   "/single/:id",
   //authController.auth,

@@ -32,8 +32,10 @@ exports.createComment = async (req, res) => {
   
       const userName = commentingUser.name;
     const postOwnerId = post.userId;
-    await createNotification(userId, postOwnerId, 'comment', `${userName} commented on your post`)
-
+    //await createNotification(userId, postOwnerId, 'comment', `${userName} commented on your post`)
+    if (userId !== postOwnerId.toString()) {
+      await createNotification(userId, postOwnerId, 'comment', `${userName} commented on your post`);
+    }
     res.status(201).json(comment);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -137,7 +139,12 @@ exports.likeComment = async (req, res) => {
     }
 
     const userName = likingUser.name;
-    await createNotification(userId, commentOwnerId, 'like', `${userName} liked on your comment`)
+    //await createNotification(userId, commentOwnerId, 'like', `${userName} liked on your comment`)
+
+    if (userId !== commentOwnerId.toString()) {
+      await createNotification(userId, commentOwnerId, 'like', `${userName} liked your comment`);
+    }
+    
     res.status(200).json({
       message: "Comment liked successfully",
     });

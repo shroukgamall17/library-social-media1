@@ -139,6 +139,34 @@ const addBook = async (req, res) => {
 
 
 //func update
+// const updateBook = async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     const files = req.files;
+//     if (files && files.Pdf) {
+//       Pdf = files.Pdf[0].filename;
+//     }
+
+//     if (files && files.cover) {
+//       cover = files.cover[0].filename;
+//     }
+//     const { title, description, category } = req.body;
+//     const newBook = await bookModel.findByIdAndUpdate(
+//       id,
+//       { title, description, category, cover, Pdf },
+//       { new: true }
+//     );
+//     if (!newBook)
+//       return res.status(404).json({ message: "not find book with id" });
+//     else {
+//       res.status(200).json({ message: "updata sucess", data: newBook });
+//     }
+//   } catch (err) {
+//     res.status(500).json({ message: err.message });
+//   }
+// };
+
+
 const updateBook = async (req, res) => {
   try {
     const { id } = req.params;
@@ -175,6 +203,7 @@ const updateBook = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
 //func dele
 const deleteBook = async (req, res) => {
   try {
@@ -209,15 +238,31 @@ const searchByCategory = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
+// const searchByTitle = async (req, res) => {
+//   try {
+//     const { title } = req.query;
+//     const findBook = await bookModel.find({ title });
+//     res.status(200).json(findBook);
+//   } catch (error) {
+//     return res.status(500).json({ message: error.message });
+//   }
+// };
 const searchByTitle = async (req, res) => {
   try {
     const { title } = req.query;
-    const findBook = await bookModel.find({ title });
+    
+    if (!title) {
+      return res.status(400).json({ message: 'Title parameter is required' });
+    }
+    
+    const findBook = await bookModel.find({ title: { $regex: new RegExp(title, 'i') } });
+    
     res.status(200).json(findBook);
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
 };
+
 
 const addFavoriteBook = async (req, res) => {
   try {

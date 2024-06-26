@@ -4,7 +4,6 @@ const path = require("path");
 const fs = require("fs");
 const {
   getAllUsers,
-
   deleteUser,
   getSingleUser,
   updateUser,
@@ -53,6 +52,7 @@ router.post("/resetPassword/:token", authController.resetPassword);
 router.post(
   "/updatePassword",
   // authController.auth,
+  // authController.auth,
   authController.updatePassword
 );
 
@@ -71,6 +71,7 @@ router.patch(
 router.get(
   "/",
   //authController.auth,
+
   getAllUsers
 );
 // router.delete("/:id", deleteUser);
@@ -80,8 +81,8 @@ router.get("/search", authController.auth, searchByName);
 //up to admin
 router.patch(
   "/up/:userId",
-  authController.auth,
-  authController.restrictTo("admin"),
+  //authController.auth,
+  //authController.restrictTo("admin"),
   upToAdmin
 );
 ///down to user
@@ -92,6 +93,12 @@ router.patch(
   downToUser
 );
 //get all users
+router.get(
+  "/user",
+  authController.auth,
+  authController.restrictTo("admin"),
+  filterWithUser
+);
 router.get(
   "/user",
   authController.auth,
@@ -120,6 +127,45 @@ router.post(
   // authController.restrictTo("admin", "user"),
   unfollowUser
 );
-
 router.get("/profile", authController.auth, profile);
+
+// get single user
+router.get("/:id", authController.auth, getSingleUser);
+
+//update user & delete user
+router
+  .route("/:id")
+  .delete(authController.auth, authController.restrictTo("admin"), deleteUser)
+  .patch(
+    authController.auth,
+    authController.restrictTo("admin", "user"),
+    updateUser
+  );
+
+
+
+// login statistics
+router.get('/login-statistics', async (req, res) => {
+  try {
+    const statistics = await authController.getLoginStatistics();
+    res.status(200).json(statistics);
+  } catch (error) {
+    res.status(500).json({ msg: "Error retrieving login statistics", error });
+  }
+});
+
+
+// register statistics
+router.get('/registration-statistics', async (req, res) => {
+  try {
+    const statistics = await authController.getRegistrationStatistics();
+    res.status(200).json(statistics);
+  } catch (error) {
+    res.status(500).json({ msg: "Error retrieving registration statistics", error });
+  }
+});
+
+module.exports = router;
+
+
 module.exports = router;
