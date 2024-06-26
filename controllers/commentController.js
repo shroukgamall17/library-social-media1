@@ -3,6 +3,7 @@ const Post = require("../models/postModel");
 const mongoose = require("mongoose");
 const { createNotification } = require("./notificationController");
 const User = require("../models/userModel");
+const { populate } = require("../models/bookModel");
 
 // Create a new comment
 exports.createComment = async (req, res) => {
@@ -43,7 +44,7 @@ exports.createComment = async (req, res) => {
 exports.getAllComments = async (req, res) => {
   try {
     // const comments = await Comment.find().populate("userId").populate("postId");
-    const comments = await Comment.find();
+    const comments = await Comment.find().populate(['userId','postId']);
     console.log(comments);
     res.status(200).json(comments);
   } catch (error) {
@@ -56,8 +57,9 @@ exports.getCommentsByPostId = async (req, res) => {
   try {
     const { postId } = req.params;
     const comments = await Comment.find({ postId }).populate(
-      "userId",
-      "username"
+      ["userId",
+      "username",
+    "postId"]
     );
     res.status(200).json(comments);
   } catch (error) {

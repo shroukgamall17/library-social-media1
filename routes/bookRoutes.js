@@ -30,6 +30,10 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage: storage });
+
+
+
+
 const router = express.Router();
 // Get All Book
 router.get("/", getAllBook);
@@ -59,7 +63,7 @@ router.post(
   addBook
 );
 //Update book
-router.patch(
+router.put(
   "/:id",
   upload.fields([
     { name: "Pdf", maxCount: 1 },

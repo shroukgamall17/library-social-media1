@@ -52,26 +52,27 @@ router.post("/resetPassword/:token", authController.resetPassword);
 //update password
 router.post(
   "/updatePassword",
- // authController.auth,
+  // authController.auth,
   authController.updatePassword
 );
 
 // get single user
 router.get("/single/:id", authController.auth, getSingleUser);
-
-//update user & delete user
-router
-  .route(":id")
-  .delete(authController.auth, authController.restrictTo("admin"), deleteUser)
-  .patch(
-    authController.auth,
-    authController.restrictTo("admin", "user"),
-    updateUser
-  );
+//delete user
+router.delete("/:id", deleteUser);
+//update user
+router.patch(
+  "/:id",
+  authController.auth,
+  authController.restrictTo("admin", "user"),
+  updateUser
+);
 //get All Users
-router.get("/",
+router.get(
+  "/",
   //authController.auth,
-   getAllUsers);
+  getAllUsers
+);
 // router.delete("/:id", deleteUser);
 // router.patch("/:id", updateUser);
 //search by name
@@ -91,8 +92,12 @@ router.patch(
   downToUser
 );
 //get all users
-router.get("/user", authController.auth,
-  authController.restrictTo("admin"), filterWithUser);
+router.get(
+  "/user",
+  authController.auth,
+  authController.restrictTo("admin"),
+  filterWithUser
+);
 ///update docImg us.er
 router.patch(
   "/photo/:id",

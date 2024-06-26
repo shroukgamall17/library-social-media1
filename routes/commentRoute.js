@@ -6,7 +6,7 @@ const commentController = require("../controllers/commentController");
 router.post("/", commentController.createComment);
 
 // Get all comments
-router.get("/comments", commentController.getAllComments);
+router.get("/", commentController.getAllComments);
 
 // Get all comments for a post
 router.get("/post/:postId", commentController.getCommentsByPostId);

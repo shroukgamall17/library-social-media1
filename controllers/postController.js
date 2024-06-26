@@ -59,9 +59,11 @@ exports.getAllPosts = async (req, res) => {
   try {
     const posts = await Post.find()
       .sort({ createdAt: -1 })
-      .populate(["likes"])
-      // .populate(["comments"])
-      .populate("userId");
+      .populate(["likes","userId","comments"]).populate({
+        path: "comments",
+        populate: { path: "userId" },
+      })
+      
     res.status(200).json(posts);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -71,11 +73,10 @@ exports.getAllPosts = async (req, res) => {
 // get certain post by id
 exports.getPostById = async (req, res) => {
   try {
-    const post = await Post.findById(req.params.id).populate([
-      { path: "comments", populate: [{ path: "userId" }] },
-      "likes",
-      "userId",
-    ]);
+    const post = await Post.findById(req.params.id).populate(["likes","userId","comments"]).populate({
+      path: "comments",
+      populate: { path: "userId" },
+    })
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
     }
