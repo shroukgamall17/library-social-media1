@@ -1,4 +1,5 @@
 const bcrypt = require("bcryptjs");
+const mongoose = require('mongoose');
 const jwt = require("jsonwebtoken");
 let { promisify } = require("util");
 
@@ -111,6 +112,14 @@ const getSingleUser = async (req, res) => {
         "posts",
         "followers",
         "following",
+        // {
+        //   path: "followers",
+        //   select: "-password -confirmPassword", // Select the fields you want to exclude or include
+        // },
+        // {
+        //   path: "following",
+        //   select: "-password -confirmPassword", // Select the fields you want to exclude or include
+        // },
       ]);
     res.json(singleUser);
   } catch (error) {
@@ -319,9 +328,29 @@ const profile = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
+
+const whoToFollow = async (req, res) => {
+  try {
+    const currentUserId = req.user.id; // Assuming you have the current user ID available in the request object
+    const currentUser = await User.findById(currentUserId).select('following');
+
+    const users = await User.aggregate([
+      { $match: { _id: { $ne:new mongoose.Types.ObjectId(currentUserId) } } }, // Exclude the current user
+      { $match: { _id: { $nin: currentUser.following } } }, // Exclude users the current user is following
+      { $sample: { size: 10 } } // Randomly select 10 users
+    ]);
+
+    res.status(200).json({
+      message: "Successfully fetched users to follow",
+      data: users,
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
 module.exports = {
   getAllUsers,
- 
+  whoToFollow,
   getSingleUser,
   deleteUser,
   updateUser,
