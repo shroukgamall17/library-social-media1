@@ -38,28 +38,28 @@ const getNotificationsForUser = async (req, res) => {
   }
 };
 
-// const markNotificationsAsRead = async (req, res) => {
-//   try {
-//     await Notification.updateMany(
-//       { receiver: req.params.userId, isRead: false },
-//       { isRead: true }
-//     );
-//     res.json({ message: "Notifications marked as read" });
-//   } catch (err) {
-//     res.status(500).json({ message: err.message });
-//   }
-// };
-
 const markNotificationsAsRead = async (req, res) => {
-  const { id } = req.params;
-
   try {
-    const read=await Notification.findByIdAndUpdate(id, { isRead: true },{new:true});
-    res.status(200).json(read);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+    await Notification.updateMany(
+      { receiver: req.params.userId, isRead: false },
+      { isRead: true }
+    );
+    res.json({ message: "Notifications marked as read" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };
+
+// const markNotificationsAsRead = async (req, res) => {
+//   const { id } = req.params;
+
+//   try {
+//     const read=await Notification.findByIdAndUpdate(id, { isRead: true },{new:true});
+//     res.status(200).json(read);
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// };
 
 const createNotification = async (senderId, receiverId, type, message) => {
   try {
@@ -74,6 +74,7 @@ const createNotification = async (senderId, receiverId, type, message) => {
     await notification.save();
 
     if (io) {
+      console.log(notification,'sent')
       io.to(receiverId).emit("newNotification", notification);
     }
 

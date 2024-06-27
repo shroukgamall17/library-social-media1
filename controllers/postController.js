@@ -122,9 +122,11 @@ exports.getAllPosts = async (req, res) => {
   try {
     const posts = await Post.find()
       .sort({ createdAt: -1 })
-      .populate(["likes"])
-      // .populate(["comments"])
-      .populate("userId");
+      .populate(["likes","userId","comments"]).populate({
+        path: "comments",
+        populate: { path: "userId" },
+      })
+     
     res.status(200).json(posts);
   } catch (error) {
     res.status(500).json({ message: error.message });
