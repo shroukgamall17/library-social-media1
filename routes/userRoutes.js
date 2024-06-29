@@ -137,7 +137,9 @@ router
   );
 
 // login statistics
-router.get("/login/login-statistics", async (req, res) => {
+
+router.get('/login/login-statistics', async (req, res) => {
+
   try {
     const statistics = await authController.getLoginStatistics();
     res.status(200).json(statistics);
