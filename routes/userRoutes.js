@@ -15,6 +15,7 @@ const {
   followUser,
   unfollowUser,
   profile,
+  whoToFollow,
 } = require("../controllers/userController");
 
 const authController = require("../controllers/authController");
@@ -121,6 +122,7 @@ router.post(
 );
 router.get("/profile", authController.auth, profile);
 
+router.post("/google/auth", authController.googleAuth);
 // get single user
 router.get("/:id", authController.auth, getSingleUser);
 
@@ -134,8 +136,6 @@ router
     updateUser
   );
 
-
-
 // login statistics
 router.get('/login/login-statistics', async (req, res) => {
   try {
@@ -146,18 +146,27 @@ router.get('/login/login-statistics', async (req, res) => {
   }
 });
 
-
 // register statistics
-router.get('/registration-statistics', async (req, res) => {
-  try {
-    const statistics = await authController.getRegistrationStatistics();
-    res.status(200).json(statistics);
-  } catch (error) {
-    res.status(500).json({ msg: "Error retrieving registration statistics", error });
+router.get(
+  "/register/registerWeek/registration-statistics",
+  async (req, res) => {
+    try {
+      const statistics = await authController.getRegistrationStatistics();
+      res.status(200).json(statistics);
+    } catch (error) {
+      res
+        .status(500)
+        .json({ msg: "Error retrieving registration statistics", error });
+    }
   }
-});
+);
+
+router.get(
+  "/random/user/whoToFollow/timeline",
+  authController.auth,
+  whoToFollow
+);
 
 module.exports = router;
-
 
 module.exports = router;
