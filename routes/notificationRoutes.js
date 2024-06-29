@@ -8,12 +8,12 @@ router.get(
   //authController.auth,
   notificationController.getNotificationsForUser
 );
-
-router.put(
-  "/:userId/mark-as-read/:id",
- // authController.auth,
-  notificationController.markNotificationsAsRead
-);
+router.put('/read-all/:userId', notificationController.markNotificationsAsRead);
+// router.put(
+//   "/:userId/mark-as-read/:id",
+//  // authController.auth,
+//   notificationController.markNotificationsAsRead
+// );
 
 router.post("/create", async (req, res) => {
   const { senderId, receiverId, type, message } = req.body;
