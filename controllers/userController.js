@@ -1,5 +1,5 @@
 const bcrypt = require("bcryptjs");
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 let { promisify } = require("util");
 
@@ -417,18 +417,15 @@ const changePassword = async (req, res) => {
   }
 };
 
-module.exports = {
-  getAllUsers,
-
 const whoToFollow = async (req, res) => {
   try {
     const currentUserId = req.user.id; // Assuming you have the current user ID available in the request object
-    const currentUser = await User.findById(currentUserId).select('following');
+    const currentUser = await User.findById(currentUserId).select("following");
 
     const users = await User.aggregate([
-      { $match: { _id: { $ne:new mongoose.Types.ObjectId(currentUserId) } } }, // Exclude the current user
+      { $match: { _id: { $ne: new mongoose.Types.ObjectId(currentUserId) } } }, // Exclude the current user
       { $match: { _id: { $nin: currentUser.following } } }, // Exclude users the current user is following
-      { $sample: { size: 10 } } // Randomly select 10 users
+      { $sample: { size: 10 } }, // Randomly select 10 users
     ]);
 
     res.status(200).json({
