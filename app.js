@@ -34,11 +34,20 @@ app.use(
   cors({
     credentials: true,
     origin: "http://localhost:5173",
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   })
 );
 
-// Socket.io setup
+//socket io
+const server = require("http").createServer(app);
+const io = require("socket.io")(server, {
+  // cors: {
+  //   origin: "http://localhost:5173", // Frontend URL
+  //   methods: ["GET", "POST"],
+  // },
+});
+
+// Initialize socket in the notification controller
 notificationController.initializeSocket(io);
 
 io.on("connection", (socket) => {
