@@ -73,7 +73,6 @@ exports.login = async (req, res) => {
       process.env.SECRET_KEY,
 
       { expiresIn: "12h" }
-
     );
     res.cookie("token", token, { httpOnly: true }).status(200).json({ user });
   } catch (error) {
@@ -152,7 +151,10 @@ exports.resetPassword = async (req, res) => {
 exports.updatePassword = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("+password");
-    if (!(await bcrypt.compare(user.password, req.body.currentPassword))) {
+    console.log(user.password);
+    console.log(req.body.currentPassword, req.body.password);
+
+    if (!(await bcrypt.compare(req.body.currentPassword, user.password))) {
       return res.status(400).json({ message: "password incorrect" });
     }
     user.password = req.body.password;
@@ -160,19 +162,21 @@ exports.updatePassword = async (req, res) => {
     await user.save();
     res.status(200).json({ user });
   } catch (error) {
+    console.log("No");
     res.status(400).json({ error });
   }
 };
 exports.auth = async (req, res, next) => {
   try {
     const { token } = req.cookies;
+
     if (!token) return res.status(404).json({ message: "please login" });
     let { data } = await promisify(jwt.verify)(token, process.env.SECRET_KEY);
     req.user = { ...data };
+
     req.user.role = data.role;
     next();
   } catch (error) {
-    console.log(error);
     res.status(400).json({ error });
   }
 };
@@ -187,55 +191,66 @@ exports.restrictTo =
     next();
   };
 
+exports.getLoginStatistics = async () => {
+  try {
+    const users = await User.find({}, "loginTimestamps");
 
-  exports.getLoginStatistics = async () => {
-    try {
-      const users = await User.find({}, 'loginTimestamps');
-  
-      const loginsPerDay = Array(7).fill(0);
-  
-      users.forEach(user => {
-        user.loginTimestamps.forEach(timestamp => {
-          const dayOfWeek = timestamp.getDay();
-          loginsPerDay[dayOfWeek]++;
-        });
-      });
-  
-      const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-      const loginStatistics = daysOfWeek.map((day, index) => ({
-        day,
-        count: loginsPerDay[index]
-      }));
-  
-      return loginStatistics;
-    } catch (error) {
-      console.error("Error retrieving login statistics:", error);
-    }
-  };
-  
- 
-  exports.getRegistrationStatistics = async () => {
-    try {
-      const users = await User.find({}, 'createdAt');
-  
-      const registrationsPerDay = Array(7).fill(0);
-  
-      users.forEach(user => {
-        const dayOfWeek = user.createdAt.getDay();
-        registrationsPerDay[dayOfWeek]++;
-      });
-  
-      const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-      const registrationStatistics = daysOfWeek.map((day, index) => ({
-        day,
-        count: registrationsPerDay[index]
-      }));
-  
-      return registrationStatistics;
-    } catch (error) {
-      console.error("Error retrieving registration statistics:", error);
-    }
-  };
-  
+    const loginsPerDay = Array(7).fill(0);
 
-  
+    users.forEach((user) => {
+      user.loginTimestamps.forEach((timestamp) => {
+        const dayOfWeek = timestamp.getDay();
+        loginsPerDay[dayOfWeek]++;
+      });
+    });
+
+    const daysOfWeek = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
+    const loginStatistics = daysOfWeek.map((day, index) => ({
+      day,
+      count: loginsPerDay[index],
+    }));
+
+    return loginStatistics;
+  } catch (error) {
+    console.error("Error retrieving login statistics:", error);
+  }
+};
+
+exports.getRegistrationStatistics = async () => {
+  try {
+    const users = await User.find({}, "createdAt");
+
+    const registrationsPerDay = Array(7).fill(0);
+
+    users.forEach((user) => {
+      const dayOfWeek = user.createdAt.getDay();
+      registrationsPerDay[dayOfWeek]++;
+    });
+
+    const daysOfWeek = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
+    const registrationStatistics = daysOfWeek.map((day, index) => ({
+      day,
+      count: registrationsPerDay[index],
+    }));
+
+    return registrationStatistics;
+  } catch (error) {
+    console.error("Error retrieving registration statistics:", error);
+  }
+};

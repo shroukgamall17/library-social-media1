@@ -23,8 +23,6 @@ const getAllUsers = async (req, res) => {
   }
 };
 
-
-
 // const registerNewUser = async (req, res) => {
 //   try {
 //     const files = req.file;
@@ -319,9 +317,100 @@ const profile = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
+
+//UPDATE profile
+const updateProfile = async (req, res) => {
+  try {
+    // req.body.id = "667d600241acf2834993cacb";
+    const userId = req.user.id;
+    console.log(userId);
+    const { bio } = req.body;
+    console.log(req.files);
+
+    let updateData = { bio };
+
+    if (req.files) {
+      if (req.files.photo) {
+        updateData.photo = `/userImages/${req.files.photo[0].filename}`;
+      }
+      if (req.files.cover) {
+        updateData.cover = `/userImages/${req.files.cover[0].filename}`;
+      }
+    }
+    const user = await User.findByIdAndUpdate(userId, updateData, {
+      new: true,
+    });
+    console.log(updateData);
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        user,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: "error",
+      message: error.message,
+    });
+  }
+};
+
+const updateName = async (req, res) => {
+  const userId = req.user.id;
+  const { name } = req.body;
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ msg: "User not found" });
+    }
+    console.log(name, userId);
+    user.name = name;
+    await user.save();
+
+    res.json({ msg: "Name updated successfully", user });
+  } catch (error) {
+    res.status(500).json({ msg: "Server error", error });
+  }
+};
+
+const changePassword = async (req, res) => {
+  const userId = req.user.id;
+  const { currentPassword, newPassword } = req.body;
+
+  try {
+    const user = await User.findById(userId)
+      .select("+password")
+      .select("+confirmPassword");
+    // console.log(user);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    console.log(user.password);
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ error: "Incorrect old password" });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    user.password = hashedPassword;
+    user.password = hashedPassword;
+    await user.save();
+    res.json({ message: "Password changed successfully" });
+  } catch (error) {
+    res.status(500).json({ error: "Server error" });
+    console.log(error.message, "ENd");
+  }
+};
+
 module.exports = {
   getAllUsers,
- 
+
   getSingleUser,
   deleteUser,
   updateUser,
@@ -333,4 +422,7 @@ module.exports = {
   followUser,
   unfollowUser,
   profile,
+  updateProfile,
+  updateName,
+  changePassword,
 };
