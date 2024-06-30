@@ -6,8 +6,7 @@ let { promisify } = require("util");
 const sendEmail = require("../utils/email");
 const crypto = require("crypto");
 const request = require("request");
-const { OAuth2Client } = require("google-auth-library");
-const client = new OAuth2Client();
+
 exports.signup = async (req, res) => {
   try {
     const { name, email, password, confirmPassword } = req.body;
@@ -61,11 +60,11 @@ exports.login = async (req, res) => {
         "following",
       ]);
     if (!user) {
-      return res.status(400).json({ message: "invalid email or password" });
+      return res.status(401).json({ message: "invalid email or password" });
     }
     let isValid = await bcrypt.compare(password, user.password);
     if (!isValid) {
-      return res.status(400).json({ msg: "Invalid email or password" });
+      return res.status(401).json({ msg: "Invalid email or password" });
     }
 
     user.loginTimestamps.push(new Date());
