@@ -15,6 +15,9 @@ const {
   followUser,
   unfollowUser,
   profile,
+  updateProfile,
+  updateName,
+  changePassword,
   whoToFollow,
 } = require("../controllers/userController");
 
@@ -24,7 +27,7 @@ const authController = require("../controllers/authController");
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadDir = path.join(__dirname, "../userImages");
-    // تأكد من أن المجلد موجود، وإذا لم يكن موجودًا، قم بإنشائه
+
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
@@ -36,6 +39,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 const router = express.Router();
+
 // Login User
 router.post("/login", authController.login);
 
@@ -59,24 +63,16 @@ router.post(
 // get single user
 router.get("/single/:id", authController.auth, getSingleUser);
 
-// router
-//   .route(":id")
-//   .delete(authController.auth, authController.restrictTo("admin"), deleteUser)
-//   .patch(
-//     authController.auth,
-//     authController.restrictTo("admin", "user"),
-//     updateUser
-//   );
 //get All Users
 router.get(
   "/",
   //authController.auth,
   getAllUsers
 );
-// router.delete("/:id", deleteUser);
-// router.patch("/:id", updateUser);
+
 //search by name
 router.get("/search", authController.auth, searchByName);
+
 //up to admin
 router.patch(
   "/up/:userId",
@@ -84,13 +80,15 @@ router.patch(
   //authController.restrictTo("admin"),
   upToAdmin
 );
-///down to user
+
+//down to user
 router.patch(
   "/down/:userId",
   authController.auth,
   authController.restrictTo("admin"),
   downToUser
 );
+
 //get all users
 router.get(
   "/user",
@@ -98,7 +96,8 @@ router.get(
   authController.restrictTo("admin"),
   filterWithUser
 );
-///update docImg us.er
+
+//update docImg user
 router.patch(
   "/photo/:id",
   upload.single("photo"),
@@ -106,6 +105,7 @@ router.patch(
   // authController.restrictTo("admin", "user"),
   updateUserPhoto
 );
+
 //follow user
 router.post(
   "/follow/:userId/:followUserId",
@@ -113,6 +113,7 @@ router.post(
   // authController.restrictTo("admin", "user"),
   followUser
 );
+
 //unfollow user
 router.post(
   "/unfollow/:userId/:unfollowUserId",
@@ -120,6 +121,7 @@ router.post(
   // authController.restrictTo("admin", "user"),
   unfollowUser
 );
+
 router.get("/profile", authController.auth, profile);
 
 router.post("/google/auth", authController.googleAuth);
@@ -129,7 +131,11 @@ router.get("/:id", authController.auth, getSingleUser);
 //update user & delete user
 router
   .route("/:id")
-  .delete(authController.auth, authController.restrictTo("admin"), deleteUser)
+  .delete(
+    authController.auth,
+    authController.restrictTo("admin", "user"),
+    deleteUser
+  )
   .patch(
     authController.auth,
     authController.restrictTo("admin", "user"),
@@ -137,6 +143,7 @@ router
   );
 
 // login statistics
+
 router.get("/login/login-statistics", async (req, res) => {
   try {
     const statistics = await authController.getLoginStatistics();
@@ -167,6 +174,18 @@ router.get(
   whoToFollow
 );
 
-module.exports = router;
+// Update profile
+router.put(
+  "/updateProfile",
+  authController.auth,
+  upload.fields([
+    { name: "photo", maxCount: 1 },
+    { name: "cover", maxCount: 1 },
+  ]),
+  updateProfile
+);
+
+router.put("/updatename", authController.auth, updateName);
+router.put("/changepassword", authController.auth, changePassword);
 
 module.exports = router;
