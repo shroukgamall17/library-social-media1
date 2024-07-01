@@ -337,7 +337,7 @@ const whoToFollow = async (req, res) => {
     const users = await User.aggregate([
       { $match: { _id: { $ne:new mongoose.Types.ObjectId(currentUserId) } } }, // Exclude the current user
       { $match: { _id: { $nin: currentUser.following } } }, // Exclude users the current user is following
-      { $sample: { size: 10 } } // Randomly select 10 users
+      { $sample: { size: 6 } } // Randomly select 10 users
     ]);
 
     res.status(200).json({

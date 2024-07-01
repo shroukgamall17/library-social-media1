@@ -78,14 +78,14 @@ router.get(
 //search by name
 router.get("/search", authController.auth, searchByName);
 //up to admin
-router.patch(
+router.put(
   "/up/:userId",
   //authController.auth,
   //authController.restrictTo("admin"),
   upToAdmin
 );
 ///down to user
-router.patch(
+router.put(
   "/down/:userId",
   authController.auth,
   authController.restrictTo("admin"),
@@ -99,7 +99,7 @@ router.get(
   filterWithUser
 );
 ///update docImg us.er
-router.patch(
+router.put(
   "/photo/:id",
   upload.single("photo"),
   // authController.auth,
@@ -130,7 +130,7 @@ router.get("/:id", authController.auth, getSingleUser);
 router
   .route("/:id")
   .delete(authController.auth, authController.restrictTo("admin"), deleteUser)
-  .patch(
+  .put(
     authController.auth,
     authController.restrictTo("admin", "user"),
     updateUser
