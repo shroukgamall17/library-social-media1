@@ -118,20 +118,13 @@ const bookRoutes = require("./routes/bookRoutes");
 const ratingRoutes = require("./routes/ratingRoutes");
 const authorRoutes = require("./routes/authorRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
-<<<<<<< HEAD
 
-=======
-const cors = require("cors");
-const dotenv = require("dotenv").config();
-const bodyParser = require("body-parser");
-const cookieParser = require("cookie-parser");
-const Notification = require("./models/notificationModel");
-const notificationController =require('./controllers/notificationController')
 const { conversation } = require("./models/conversionModel");
 const { Message } = require("./models/messageModel");
 const User = require("./models/userModel");
 const { promisify } = require("util");
->>>>>>> angelo
+
+
 const app = express();
 const server = require("http").createServer(app);
 const io = require("socket.io")(server, {
@@ -156,14 +149,7 @@ app.use(
   })
 );
 
-<<<<<<< HEAD
-=======
-//socket io
-const server = require("http").createServer(app);
-const io = require("socket.io")(server);
 
-
->>>>>>> angelo
 // Initialize socket in the notification controller
 notificationController.initializeSocket(io);
 
@@ -341,15 +327,12 @@ app.use("/image", express.static("bookImage"));
 app.use("/userImages", express.static("userImages"));
 app.use("/postcard", express.static("postImages"));
 
-<<<<<<< HEAD
+
+
+
+
 // Start server
 server.listen(process.env.PORT, () =>
   console.log(`App listening on port ${process.env.PORT}!`)
 );
-=======
 
-server.listen(process.env.PORT, () => console.log(`App listening on port ${process.env.PORT}!`));
-
-
-
->>>>>>> angelo
