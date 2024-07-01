@@ -66,7 +66,7 @@ router.get("/single/:id", getSingleBook);
 router.post("/addFavoriteBook/:userId/:bookId", auth, addFavoriteBook);
 //removeFavoriteBook
 router.post("/removeFavoriteBook/:userId/:bookId", removeFavoriteBook);
-router.patch(
+router.put(
   "/:id",
   upload.fields([
     { name: "Pdf", maxCount: 1 },
