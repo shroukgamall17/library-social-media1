@@ -31,6 +31,12 @@ router.get(
   // authController.restrictTo("admin", "user"),
   postController.getAllPosts
 );
+router.get(
+  "/pagination",
+  // authController.auth,
+  // authController.restrictTo("admin", "user"),
+  postController.getTwentyPostForPage
+);
 router.get("/:id", postController.getUserPosts);
 router.get(
   "/single/:id",

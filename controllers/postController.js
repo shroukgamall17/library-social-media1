@@ -132,6 +132,39 @@ exports.getAllPosts = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+//get 20 posts for page (pagination)
+exports.getTwentyPostForPage = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+
+    const skip = (page - 1) * limit;
+    const posts = await Post.find()
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate(["likes", "userId", "comments"])
+      .populate({
+        path: "comments",
+        populate: { path: "userId" },
+      });
+
+   // number of posts
+    const totalPosts = await Post.countDocuments();
+
+    // number of pages
+    const totalPages = Math.ceil(totalPosts / limit);
+    res.status(200).json({
+      posts,
+      totalPages,
+      currentPage: page,
+      totalPosts,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 
 // get certain post by id
 exports.getPostById = async (req, res) => {
