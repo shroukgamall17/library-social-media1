@@ -122,11 +122,12 @@ exports.getAllPosts = async (req, res) => {
   try {
     const posts = await Post.find()
       .sort({ createdAt: -1 })
-      .populate(["likes","userId","comments"]).populate({
+      .populate(["likes", "userId", "comments"])
+      .populate({
         path: "comments",
         populate: { path: "userId" },
-      })
-     
+      });
+
     res.status(200).json(posts);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -393,5 +394,37 @@ exports.unSavePost = async (req, res) => {
       .json({ message: "Post removed from favorites.", data: user });
   } catch (err) {
     res.status(500).json({ message: err.message });
+  }
+};
+//get 20 posts for page (pagination)
+exports.getTwentyPostForPage = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+
+    const skip = (page - 1) * limit;
+    const posts = await Post.find()
+      .sort({ createdAt: -1 })
+      // .skip(skip)
+      .limit(limit * page)
+      .populate(["likes", "userId", "comments"])
+      .populate({
+        path: "comments",
+        populate: { path: "userId" },
+      });
+
+    // number of posts
+    const totalPosts = await Post.countDocuments();
+
+    // number of pages
+    const totalPages = Math.ceil(totalPosts / limit);
+    res.status(200).json({
+      posts,
+      totalPages,
+      currentPage: page,
+      totalPosts,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
