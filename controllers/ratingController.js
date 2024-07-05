@@ -1,69 +1,95 @@
-const Book = require("../models/bookModel");
 const Rating = require("../models/ratingModel");
-const { createNotification } = require("./notificationController");
+const Book = require("../models/bookModel");
+const User = require("../models/userModel");
+
 const addRating = async (req, res) => {
+  const { userId, bookId } = req.params;
+  const { rating, review } = req.body;
+  // console.log(req.params);
   try {
-    const { rating, review } = req.body;
-    const { bookId, userId } = req.params;
+    const book = await Book.findById(bookId);
+    const user = await User.findById(userId);
 
-    if (!bookId || !userId || !rating) {
-      return res.status(400).json({ message: "Book ID, User ID, and Rating are required." });
+    if (!book || !user) {
+      return res.status(404).json({ error: "Book or User not found" });
     }
 
-    if (rating < 1 || rating > 5) {
-      return res.status(400).json({ message: "Rating must be between 1 and 5." });
-    }
-
-    const newRating = await Rating.create({
+    const newRating = new Rating({
       book: bookId,
       user: userId,
       rating,
       review,
     });
 
-    const book = await Book.findById(bookId).populate("authorId");
+    await newRating.save();
 
-    if (!book) {
-      // Rollback: Delete newly created rating
-      await Rating.findByIdAndDelete(newRating._id);
-      return res.status(404).json({ message: "Book not found." });
-    }
-
-    // Debugging log
-    console.log('Book:', book);
-
-    // Check if authorId is present in book
-    if (!book.authorId) {
-      // Rollback: Delete newly created rating
-      await Rating.findByIdAndDelete(newRating._id);
-      return res.status(400).json({ message: "Author ID is required for the book." });
-    }
-
-    book.ratings.push(newRating._id);
-    book.ratingCount = book.ratings.length;
-
-    // Calculate average rating
-    const ratings = await Rating.find({ book: bookId });
-    const totalRating = ratings.reduce((acc, ratingDoc) => acc + ratingDoc.rating, 0);
-    book.averageRating = totalRating / book.ratingCount;
-    
-    await book.save();
-    console.log('dfdf')
-    // Send notification to the author of the book
-    await createNotification(userId, book.authorId._id, "rating", "Someone rated your book");
-
-    res.status(200).json({ message: "Rating added successfully", data: newRating });
-  } catch (err) {
-    // Handle any errors and respond with an error message
-    if (err.name === "ValidationError") {
-      // Mongoose validation error
-      const errors = Object.values(err.errors).map((e) => e.message);
-      return res.status(400).json({ message: errors });
-    }
-    res.status(500).json({ message: err.message });
+    res
+      .status(201)
+      .json({ message: "Rating added successfully", rating: newRating });
+  } catch (error) {
+    console.error("Error adding rating:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
-module.exports={
-  addRating
-}
+const getFirstFiveReviews = async (req, res) => {
+  const bookId = req.params.id;
+  // console.log(bookId);
+
+  try {
+    const reviews = await Rating.find({ book: bookId })
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .populate("user", "_id name photo")
+      .exec();
+
+    res.status(200).json({ reviews });
+  } catch (error) {
+    console.error("Error fetching first 5 reviews:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+const getAllReviews = async (req, res) => {
+  const bookId = req.params.id;
+
+  try {
+    const reviews = await Rating.find({ book: bookId })
+      .populate("user", "_id name photo")
+      .exec();
+    console.log(reviews);
+    res.status(200).json({ reviews });
+  } catch (error) {
+    console.error("Error fetching all reviews:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+const deleteReview = async (req, res) => {
+  try {
+    const { userId, reviewId } = req.params;
+
+    const review = await Rating.findById(reviewId);
+    if (!review) {
+      return res.status(404).json({ message: "Review not found" });
+    }
+
+    if (review.user.toString() !== userId) {
+      return res
+        .status(403)
+        .json({ message: "User not authorized to delete this review" });
+    }
+
+    await Rating.deleteOne({ _id: reviewId });
+
+    res.status(200).json({ message: "Review deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+module.exports = {
+  addRating,
+  getFirstFiveReviews,
+  getAllReviews,
+  deleteReview,
+};
