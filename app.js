@@ -309,8 +309,8 @@ app.post("/send-notification", async (req, res) => {
 // Connect to MongoDB
 mongoose
   .connect(process.env.CONNECTION_DB, {
-    //useNewUrlParser: true,
-    //useUnifiedTopology: true,
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
   })
   .then(() => console.log("Connected to DB 😃"))
   .catch((err) => console.error("Failed to connect to DB", err));
