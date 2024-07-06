@@ -31,24 +31,13 @@ router.get(
   // authController.restrictTo("admin", "user"),
   postController.getAllPosts
 );
-router.get("/:id", postController.getUserPosts);
 router.get(
-  "/single/:id",
-  //authController.auth,
-  postController.getPostById
-);
-router.delete(
-  "/:id",
+  "/pagination",
   // authController.auth,
-  postController.deletePost
+  // authController.restrictTo("admin", "user"),
+  postController.getTwentyPostForPage
 );
-router.patch(
-  "/:id",
-  //authController.auth,
-  //authController.restrictTo("admin", "user"),
-  upload.single("photo"),
-  postController.updatePost
-);
+
 router.post(
   "/like/:userId/:postId",
   // authController.auth,
@@ -72,5 +61,23 @@ router.post(
   //authController.auth,
   //authController.restrictTo("admin", "user"),
   postController.unSavePost
+);
+router.get("/:id", postController.getUserPosts);
+router.get(
+  "/single/:id",
+  //authController.auth,
+  postController.getPostById
+);
+router.delete(
+  "/:id",
+  // authController.auth,
+  postController.deletePost
+);
+router.patch(
+  "/:id",
+  //authController.auth,
+  //authController.restrictTo("admin", "user"),
+  upload.single("photo"),
+  postController.updatePost
 );
 module.exports = router;

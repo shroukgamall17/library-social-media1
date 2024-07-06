@@ -100,11 +100,9 @@ exports.forgotPassword = async (req, res) => {
     return res.status(400).json({ msg: "there is no user with that email " });
   const resetToken = user.createPasswordResetToken();
   await user.save({ validateBeforeSave: false });
-  const resetURL = `${req.protocol}://${req.get(
-    "host"
-  )}/users/resetPassword/${resetToken}`;
+  const resetURL = `${req.protocol}://localhost:5173/resetPassword/${resetToken}`;
 
-  const message = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to: ${resetURL}.\nIf you didn't forget your password, please ignore this email!`;
+  const message = `Forgot your password? Submit with your new password to: ${resetURL}.\nIf you didn't forget your password, please ignore this email!`;
   try {
     await sendEmail({
       email: user.email,
