@@ -80,8 +80,7 @@ app.post("/send-notification", async (req, res) => {
 
 mongoose
   .connect(process.env.CONNECTION_DB, {
-    //useNewUrlParser: true,
-    //useUnifiedTopology: true,
+
   })
   .then(() => console.log("Connected to DB 😃"))
   .catch((err) => console.error("Failed to connect to DB", err));
@@ -96,7 +95,7 @@ app.use("/notifications", notificationRoutes);
 app.use("/image", express.static("bookImage"));
 app.use("/userImages", express.static("userImages"));
 app.use("/postcard", express.static("postImages"));
-// app.use("/books", bookRoutes);
+
 
 
 server.listen(process.env.PORT, () => console.log(`App listening on port ${process.env.PORT}!`));
