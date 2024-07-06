@@ -136,34 +136,6 @@ const addBook = async (req, res) => {
 };
 
 
-//func update
-// const updateBook = async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     const files = req.files;
-//     if (files && files.Pdf) {
-//       Pdf = files.Pdf[0].filename;
-//     }
-
-//     if (files && files.cover) {
-//       cover = files.cover[0].filename;
-//     }
-//     const { title, description, category } = req.body;
-//     const newBook = await bookModel.findByIdAndUpdate(
-//       id,
-//       { title, description, category, cover, Pdf },
-//       { new: true }
-//     );
-//     if (!newBook)
-//       return res.status(404).json({ message: "not find book with id" });
-//     else {
-//       res.status(200).json({ message: "updata sucess", data: newBook });
-//     }
-//   } catch (err) {
-//     res.status(500).json({ message: err.message });
-//   }
-// };
-
 
 const updateBook = async (req, res) => {
   try {
@@ -221,7 +193,7 @@ const deleteBook = async (req, res) => {
 const getSingleBook = async (req, res) => {
   try {
     const { id } = req.params;
-    const singleBook = await bookModel.findById(id);
+    const singleBook = await bookModel.findById(id).populate(['authorId','ratings']);
     res.status(200).json({ message: "get success", data: singleBook });
   } catch (err) {
     res.status(500).json({ message: err.message });
